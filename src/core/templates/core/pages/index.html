@@ -1,0 +1,280 @@
+{# users/core/tempolates/core/pages/index.html #}
+{% extends "core/base.html" %}
+{% load cotton navigation icons static %}
+
+{% block title %}Advising — Starter Kit{% endblock %}
+
+{% block content %}
+{# ---------- HERO ---------- #}
+<section class="relative isolate pt-12 pb-16" aria-labelledby="hero-title">
+  <div class="mx-auto max-w-6xl px-4">
+    <div class="grid items-center gap-10 md:grid-cols-2">
+      <div class="space-y-5">
+        <h1 id="hero-title" class="text-4xl font-semibold tracking-tight">
+          Book language advising in minutes
+        </h1>
+        <p class="text-muted-foreground">
+          Students can book 30 minute slots with verified teachers — online or on campus. Fast, accessible, and secure.
+        </p>
+        <div class="flex flex-wrap gap-3">
+          <a href="{% url 'users:login' %}">
+            {% c button %}Book a slot{% endc %}
+          </a>
+          <a href="#" class="inline-block">
+            {% c button variant="outline" %}Browse teachers{% endc %}
+          </a>
+        </div>
+        <div class="flex items-center gap-6 text-sm text-muted-foreground">
+          <div><strong class="font-medium text-foreground">2,100+</strong> slots last term</div>
+          <div><strong class="font-medium text-foreground">98%</strong> satisfaction</div>
+        </div>
+      </div>
+
+      <figure class="relative">
+        <img
+          src="{% static 'core/img/hero.jpg' %}"
+          alt="Students meeting in a study space"
+          class="rounded-2xl w-full h-auto object-cover shadow"
+          loading="lazy"
+        />
+        <figcaption class="sr-only">Advising can be in person or online.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+{# ---------- TRUST / CLAIMS (OPTIONAL SMALL STRIP) ---------- #}
+<section class="py-6" aria-label="Trust">
+  <div class="mx-auto max-w-6xl px-4">
+    <p class="text-center text-sm text-muted-foreground">
+      Role-aware access for students, teachers, and admins • Accessibility-first UI • Django 5 + Tailwind v4
+    </p>
+  </div>
+</section>
+
+{# ---------- FEATURES GRID ---------- #}
+<section class="py-12" aria-labelledby="features-title">
+  <div class="mx-auto max-w-6xl px-4">
+    <h2 id="features-title" class="text-2xl font-semibold tracking-tight mb-6">Why Advising?</h2>
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {% c card %}
+        {% c card/header %}
+          {% c card/title %}In-person or online{% endc %}
+          {% c card/description %}Meet on campus or via secure video.{% endc %}
+        {% endc %}
+        {% c card/footer %}
+          {% c button variant="secondary" %}Learn more{% endc %}
+        {% endc %}
+      {% endc %}
+
+      {% c card %}
+        {% c card/header %}
+          {% c card/title %}Smart availability{% endc %}
+          {% c card/description %}Real-time teacher calendars & conflict checks.{% endc %}
+        {% endc %}
+        {% c card/footer %}
+          {% c button variant="secondary" %}Learn more{% endc %}
+        {% endc %}
+      {% endc %}
+
+      {% c card %}
+        {% c card/header %}
+          {% c card/title %}Timezone aware{% endc %}
+          {% c card/description %}Perfect for international students and remote tutors.{% endc %}
+        {% endc %}
+        {% c card/footer %}
+          {% c button variant="secondary" %}Learn more{% endc %}
+        {% endc %}
+      {% endc %}
+    </div>
+  </div>
+</section>
+
+{# ---------- HOW IT WORKS ---------- #}
+<section class="py-12" aria-labelledby="how-title">
+  <div class="mx-auto max-w-6xl px-4 space-y-6">
+    <h2 id="how-title" class="text-2xl font-semibold tracking-tight">How it works</h2>
+    <ol class="grid gap-6 sm:grid-cols-3">
+      <li class="space-y-2">
+        {% c badge %}Step 1{% endc %}
+        <h3 class="font-medium">Browse teachers</h3>
+        <p class="text-muted-foreground">Filter by language, modality, or time.</p>
+      </li>
+      <li class="space-y-2">
+        {% c badge %}Step 2{% endc %}
+        <h3 class="font-medium">Pick a slot</h3>
+        <p class="text-muted-foreground">Choose an available time that suits you.</p>
+      </li>
+      <li class="space-y-2">
+        {% c badge %}Step 3{% endc %}
+        <h3 class="font-medium">Confirm & meet</h3>
+        <p class="text-muted-foreground">Get reminders and join online or in person.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+{# ---------- APP OVERVIEW / ROADMAP ---------- #}
+<section class="py-12" aria-labelledby="roadmap-title">
+  <div class="mx-auto max-w-4xl px-4 space-y-6">
+    <h2 id="roadmap-title" class="text-2xl font-semibold tracking-tight">
+      Advising — upcoming functionality
+    </h2>
+    <p class="text-muted-foreground">
+      This is the planned booking flow for teachers and students. We’ll implement it incrementally.
+    </p>
+
+    <h3 class="text-lg font-medium mt-6">Teacher dashboard</h3>
+    <ul class="list-disc pl-6 space-y-2">
+      <li>
+        Calendar view shows the <strong>current month</strong>, with <strong>today highlighted</strong>.
+      </li>
+      <li>
+        Navigation to <strong>previous</strong> and <strong>next</strong> months.
+      </li>
+      <li>
+        <strong>Clickable dates</strong> take the teacher to a <strong>Day Detail</strong> page.
+      </li>
+    </ul>
+
+    <h3 class="text-lg font-medium mt-6">Day Detail (teacher view)</h3>
+    <ul class="list-disc pl-6 space-y-2">
+      <li>
+        Timeline lists <strong>15-minute slots</strong> from <strong>06:00</strong> to <strong>23:00</strong>.
+      </li>
+      <li>
+        Teachers select a <strong>15-minute</strong> slot to mark availability. Appointments are
+        actually <strong>30 minutes</strong>; selecting <em>08:00</em> marks both <strong>08:00–08:15</strong> and
+        <strong>08:15–08:30</strong> as available in the same row.
+      </li>
+      <li class="flex items-center gap-2">
+        Each availability requires a <strong>type</strong>:
+        {% c badge %}Online{% endc %}
+        {% c badge %}In person{% endc %}
+        {% c badge %}Both{% endc %}
+      </li>
+      <li>
+        Selecting a slot toggles availability; selecting again unsets it (preventing accidental double-booking).
+      </li>
+    </ul>
+
+    <h3 class="text-lg font-medium mt-6">Student booking</h3>
+    <ul class="list-disc pl-6 space-y-2">
+      <li>Students browse teachers and see <strong>real-time availability</strong>.</li>
+      <li>Students can filter by <strong>date</strong>, <strong>time</strong>, and <strong>type</strong> (Online / In person / Both).</li>
+      <li>Booking a slot reserves a <strong>30-minute appointment</strong> and blocks overlapping 15-minute cells.</li>
+    </ul>
+
+    <h3 class="text-lg font-medium mt-6">Rules & constraints</h3>
+    <ul class="list-disc pl-6 space-y-2">
+      <li>Availability is stored in <strong>15-minute granularity</strong>; bookings consume <strong>two adjacent slots</strong>.</li>
+      <li>Overlaps are prevented; adjacent same-teacher bookings must not clash.</li>
+      <li>Availability type is required and may be validated against location/video settings.</li>
+    </ul>
+  </div>
+</section>
+
+
+{# ---------- CALENDAR PREVIEW ---------- #}
+<section class="py-12" aria-labelledby="calendar-title">
+  <div class="mx-auto max-w-6xl px-4">
+    <h2 id="calendar-title" class="text-2xl font-semibold tracking-tight mb-4">A glance at scheduling</h2>
+    <figure>
+      <img
+        src="{% static 'core/img/calendar.jpg' %}"
+        alt="Illustration of a calendar on a laptop screen"
+        class="rounded-2xl w-full h-auto object-cover shadow"
+        loading="lazy"
+      />
+      <figcaption class="mt-2 text-sm text-muted-foreground">Simple, accessible booking flow your users will love.</figcaption>
+    </figure>
+  </div>
+</section>
+
+{# ---------- TEACHER SPOTLIGHT ---------- #}
+<section class="py-12" aria-labelledby="teachers-title">
+  <div class="mx-auto max-w-6xl px-4">
+    <h2 id="teachers-title" class="text-2xl font-semibold tracking-tight mb-6">Featured teachers</h2>
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {% c card %}
+        {% c card/header %}
+          {% c card/title %}Dr. S. Nguyen{% endc %}
+          {% c card/description %}Advanced Vietnamese • Online{% endc %}
+        {% endc %}
+        {% c card/content %}
+          <p class="text-muted-foreground">Pronunciation clinics and exam prep.</p>
+        {% endc %}
+        {% c card/footer %}
+          {% c button %}View profile{% endc %}
+        {% endc %}
+      {% endc %}
+
+      {% c card %}
+        {% c card/header %}
+          {% c card/title %}María García{% endc %}
+          {% c card/description %}Spanish • In person{% endc %}
+        {% endc %}
+        {% c card/content %}
+          <p class="text-muted-foreground">Conversation practice and academic writing.</p>
+        {% endc %}
+        {% c card/footer %}
+          {% c button %}View profile{% endc %}
+        {% endc %}
+      {% endc %}
+
+      {% c card %}
+        {% c card/header %}
+          {% c card/title %}Yuuki Tanaka{% endc %}
+          {% c card/description %}Japanese • Online{% endc %}
+        {% endc %}
+        {% c card/content %}
+          <p class="text-muted-foreground">JLPT prep and business etiquette.</p>
+        {% endc %}
+        {% c card/footer %}
+          {% c button %}View profile{% endc %}
+        {% endc %}
+      {% endc %}
+    </div>
+  </div>
+</section>
+
+{# ---------- FAQ ---------- #}
+<section class="py-12" aria-labelledby="faq-title">
+  <div class="mx-auto max-w-4xl px-4">
+    <h2 id="faq-title" class="text-2xl font-semibold tracking-tight mb-6">FAQ</h2>
+    {% c accordion type="single" collapsible="true" class="w-full" %}
+      {% c accordion/item value="faq-1" %}
+        {% c accordion/trigger %}Do I need an account to book?{% endc %}
+        {% c accordion/content %}Yes—use your university email to sign in and book.{% endc %}
+      {% endc %}
+      {% c accordion/item value="faq-2" %}
+        {% c accordion/trigger %}Can I cancel or reschedule?{% endc %}
+        {% c accordion/content %}You can request changes with your assigned teacher.{% endc %}
+      {% endc %}
+      {% c accordion/item value="faq-3" %}
+        {% c accordion/trigger %}Is there an online option?{% endc %}
+        {% c accordion/content %}Yes—many teachers offer secure video sessions.{% endc %}
+      {% endc %}
+    {% endc %}
+  </div>
+</section>
+
+{# ---------- CTA BAND ---------- #}
+<section class="py-16" role="region" aria-labelledby="cta-title">
+  <div class="mx-auto max-w-6xl px-4">
+    {% c card %}
+      {% c card/header %}
+        {% c card/title id="cta-title" %}Ready to get started?{% endc %}
+        {% c card/description %}Create your account and book an advising slot today.{% endc %}
+      {% endc %}
+      {% c card/footer %}
+        <div class="flex flex-wrap gap-3">
+          <a href="{% url 'users:login' %}">{% c button %}Book a slot{% endc %}</a>
+          <a href="#" class="inline-block">{% c button variant="outline" %}Browse teachers{% endc %}</a>
+        </div>
+      {% endc %}
+    {% endc %}
+  </div>
+</section>
+
+{% endblock %}

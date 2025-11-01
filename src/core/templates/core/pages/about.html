@@ -1,0 +1,315 @@
+{% extends "core/base.html" %}
+{% load cotton %}
+
+{% block title %}About | Advising{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto py-12 space-y-12">
+  <header class="space-y-2 text-center">
+    <h1 class="text-3xl font-semibold tracking-tight">About Advising</h1>
+    <p class="text-muted-foreground">
+      A live gallery of included <strong>ShadCN-Django</strong> components. Use this as a style reference while building.
+    </p>
+  </header>
+
+  <!-- Buttons -->
+  <section class="space-y-4">
+    <h2 class="text-xl font-medium">Buttons</h2>
+    <div class="flex flex-wrap gap-3">
+      {% c button %}Default{% endc %}
+      {% c button variant="secondary" %}Secondary{% endc %}
+      {% c button variant="outline" %}Outline{% endc %}
+      {% c button variant="destructive" %}Destructive{% endc %}
+    </div>
+  </section>
+
+  <!-- Badge -->
+  <section class="space-y-4">
+    <h2 class="text-xl font-medium">Badge</h2>
+    <div class="flex gap-2">
+      {% c badge %}Default{% endc %}
+    </div>
+  </section>
+
+  <!-- Card -->
+  <section class="space-y-4">
+    <h2 class="text-xl font-medium">Card</h2>
+    {% c card %}
+      {% c card/header %}
+        {% c card/title %}Card title{% endc %}
+        {% c card/description %}A simple reusable card component.{% endc %}
+      {% endc %}
+      {% c card/content %}
+        <p class="text-muted-foreground">Cards can include any content inside and adapt to your theme.</p>
+      {% endc %}
+      {% c card/footer %}
+        {% c button %}Action{% endc %}
+      {% endc %}
+    {% endc %}
+  </section>
+
+<!-- Accordion -->
+<section class="space-y-4">
+  <h2 class="text-xl font-medium">Accordion</h2>
+
+  {% c accordion type="single" collapsible="true" class="w-full" %}
+    {% c accordion/item value="item-1" %}
+      {% c accordion/trigger %}What is Advising?{% endc %}
+      {% c accordion/content %}
+        A Django 5 + Tailwind v4 + ShadCN-Django starter.
+      {% endc %}
+    {% endc %}
+
+    {% c accordion/item value="item-2" %}
+      {% c accordion/trigger %}Is it production ready?{% endc %}
+      {% c accordion/content %}
+        Yes—roles, auth, admin, tests, and tooling are included.
+      {% endc %}
+    {% endc %}
+
+    {% c accordion/item value="item-3" %}
+      {% c accordion/trigger %}Can I customize components?{% endc %}
+      {% c accordion/content %}
+        Absolutely. Adjust templates under <code>templates/cotton/</code>.
+      {% endc %}
+    {% endc %}
+  {% endc %}
+</section>
+
+
+  <!-- Alert -->
+  <section class="space-y-4">
+    <h2 class="text-xl font-medium">Alert</h2>
+    {% c alert %}
+      {% c alert/title %}Heads up!{% endc %}
+      {% c alert/description %}This is an informational alert.{% endc %}
+    {% endc %}
+  </section>
+
+  <!-- Alert Dialog -->
+  <section class="space-y-4">
+    <h2 class="text-xl font-medium">Alert Dialog</h2>
+    {% c alert_dialog %}
+      {% c alert_dialog/trigger %}{% c button variant="destructive" %}Delete item{% endc %}{% endc %}
+      {% c alert_dialog/content %}
+        {% c alert_dialog/header %}
+          {% c alert_dialog/title %}Are you absolutely sure?{% endc %}
+          {% c alert_dialog/description %}This action cannot be undone.{% endc %}
+        {% endc %}
+        {% c alert_dialog/footer %}
+          {% c alert_dialog/cancel %}Cancel{% endc %}
+          {% c alert_dialog/action %}Continue{% endc %}
+        {% endc %}
+      {% endc %}
+    {% endc %}
+  </section>
+
+  <!-- Checkbox -->
+  <section class="space-y-4">
+    <h2 class="text-xl font-medium">Checkbox</h2>
+    <div class="flex items-center gap-2">
+      {% c checkbox id="agree" %}{% endc %}
+      {% c label for="agree" %}I agree to terms{% endc %}
+    </div>
+  </section>
+
+  <!-- Combobox -->
+  <section class="space-y-4">
+    <h2 class="text-xl font-medium">Combobox</h2>
+    {% c combobox placeholder="Search item…" %}
+      <!-- customize items later -->
+    {% endc %}
+  </section>
+
+  <!-- Command -->
+  <section class="space-y-4">
+    <h2 class="text-xl font-medium">Command</h2>
+    {% c command %}
+      {% c command/input placeholder="Type a command or search…" %}{% endc %}
+      {% c command/list %}
+        {% c command/empty %}No results found.{% endc %}
+        {% c command/group heading="Suggestions" %}
+          {% c command/item %}Open Settings{% endc %}
+          {% c command/item %}Show Docs{% endc %}
+        {% endc %}
+      {% endc %}
+    {% endc %}
+  </section>
+
+  <!-- Command Dialog -->
+  <section class="space-y-4">
+    <h2 class="text-xl font-medium">Command Dialog</h2>
+    {% c command_dialog %}
+      {% c button %}Open Command Palette{% endc %}
+    {% endc %}
+  </section>
+
+  <!-- Dialog -->
+  <section class="space-y-4">
+    <h2 class="text-xl font-medium">Dialog</h2>
+    {% c dialog %}
+      {% c dialog/trigger %}{% c button variant="outline" %}Open dialog{% endc %}{% endc %}
+      {% c dialog/content %}
+        {% c dialog/header %}
+          {% c dialog/title %}Welcome{% endc %}
+          {% c dialog/description %}A basic modal dialog.{% endc %}
+        {% endc %}
+        <p class="text-muted-foreground">You can place any content here.</p>
+      {% endc %}
+    {% endc %}
+  </section>
+
+  <!-- Dropdown Menu -->
+  <section class="space-y-4">
+    <h2 class="text-xl font-medium">Dropdown Menu</h2>
+    {% c dropdown_menu %}
+      {% c dropdown_menu/trigger %}
+        {% c button variant="outline" %}Open menu{% endc %}
+      {% endc %}
+      {% c dropdown_menu/content %}
+        {% c dropdown_menu/item %}Profile{% endc %}
+        {% c dropdown_menu/item %}Settings{% endc %}
+        {% c dropdown_menu/separator %}{% endc %}
+        {% c dropdown_menu/item %}Logout{% endc %}
+      {% endc %}
+    {% endc %}
+  </section>
+
+  <!-- Form + Input + Label + Textarea -->
+  <section class="space-y-4">
+    <h2 class="text-xl font-medium">Form</h2>
+    <form method="post" class="space-y-4" onsubmit="return false;">
+      {% c form/fieldset %}
+        {% c form/field %}
+          {% c form/label for="name" %}Name{% endc %}
+          {% c input id="name" name="name" placeholder="Jane Doe" %}{% endc %}
+          {% c form/description %}Enter your full name.{% endc %}
+        {% endc %}
+        {% c form/field %}
+          {% c form/label for="message" %}Message{% endc %}
+          {% c textarea id="message" name="message" placeholder="Say hello…" %}{% endc %}
+        {% endc %}
+      {% endc %}
+      {% c button %}Submit (demo){% endc %}
+    </form>
+  </section>
+
+  <!-- Navigation Menu -->
+  <section class="space-y-4">
+    <h2 class="text-xl font-medium">Navigation Menu</h2>
+    {% c navigation_menu %}
+      {% c navigation_menu/list %}
+        {% c navigation_menu/item %}
+          {% c navigation_menu/trigger %}Products{% endc %}
+          {% c navigation_menu/content %}
+            {% c navigation_menu/link href="#" %}Docs{% endc %}
+            {% c navigation_menu/link_details href="#" title="Components" %}Reusable UI pieces{% endc %}
+          {% endc %}
+        {% endc %}
+        {% c navigation_menu/item %}
+          {% c navigation_menu/link href="#" %}Pricing{% endc %}
+        {% endc %}
+      {% endc %}
+    {% endc %}
+  </section>
+
+  <!-- Popover -->
+  <section class="space-y-4">
+    <h2 class="text-xl font-medium">Popover</h2>
+    {% c popover %}
+      {% c popover/trigger %}{% c button variant="outline" %}Open popover{% endc %}{% endc %}
+      {% c popover/content %}
+        <p class="text-sm">Small floating content.</p>
+      {% endc %}
+    {% endc %}
+  </section>
+
+  <!-- Progress -->
+  <section class="space-y-4">
+    <h2 class="text-xl font-medium">Progress</h2>
+    {% c progress value="33" %}{% endc %}
+  </section>
+
+  <!-- Select -->
+  <section class="space-y-4">
+    <h2 class="text-xl font-medium">Select</h2>
+    {% c select %}
+      {% c select/trigger %}{% c select/value placeholder="Choose one" %}{% endc %}{% endc %}
+      {% c select/content %}
+        {% c select/item value="a" %}Alpha{% endc %}
+        {% c select/item value="b" %}Bravo{% endc %}
+      {% endc %}
+    {% endc %}
+  </section>
+
+  <!-- Separator -->
+  <section class="space-y-4">
+    <h2 class="text-xl font-medium">Separator</h2>
+    <div>
+      <div>Above</div>
+      {% c separator %}{% endc %}
+      <div>Below</div>
+    </div>
+  </section>
+
+  <!-- Sheet -->
+  <section class="space-y-4">
+    <h2 class="text-xl font-medium">Sheet</h2>
+    {% c sheet %}
+      {% c sheet/trigger %}{% c button %}Open sheet{% endc %}{% endc %}
+      {% c sheet/content %}
+        {% c sheet/header %}
+          {% c sheet/title %}Side panel{% endc %}
+          {% c sheet/description %}Useful for secondary flows.{% endc %}
+        {% endc %}
+        <p class="text-muted-foreground">Place supporting content here.</p>
+      {% endc %}
+    {% endc %}
+  </section>
+
+  <!-- Table -->
+  <section class="space-y-4">
+    <h2 class="text-xl font-medium">Table</h2>
+    {% c table %}
+      {% c table/caption %}Example data table{% endc %}
+      {% c table/header %}
+        {% c table/row %}
+          {% c table/head %}Name{% endc %}
+          {% c table/head %}Role{% endc %}
+          {% c table/head %}Status{% endc %}
+        {% endc %}
+      {% endc %}
+      {% c table/body %}
+        {% c table/row %}
+          {% c table/cell %}Ada Lovelace{% endc %}
+          {% c table/cell %}Engineer{% endc %}
+          {% c table/cell %}Active{% endc %}
+        {% endc %}
+        {% c table/row %}
+          {% c table/cell %}Alan Turing{% endc %}
+          {% c table/cell %}Researcher{% endc %}
+          {% c table/cell %}Inactive{% endc %}
+        {% endc %}
+      {% endc %}
+    {% endc %}
+  </section>
+
+  <!-- Tabs -->
+  <section class="space-y-4">
+    <h2 class="text-xl font-medium">Tabs</h2>
+    {% c tabs default_value="account" %}
+      {% c tabs/list %}
+        {% c tabs/trigger value="account" %}Account{% endc %}
+        {% c tabs/trigger value="password" %}Password{% endc %}
+      {% endc %}
+      {% c tabs/content value="account" %}
+        <p class="text-muted-foreground">Account content goes here.</p>
+      {% endc %}
+      {% c tabs/content value="password" %}
+        <p class="text-muted-foreground">Password content goes here.</p>
+      {% endc %}
+    {% endc %}
+  </section>
+
+</div>
+{% endblock %}
