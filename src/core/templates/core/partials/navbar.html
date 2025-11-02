@@ -92,10 +92,24 @@
               <span>Courses</span>
             </a>
           {% elif request.user|is_teacher %}
-            <a href="#" class="nav-link">
+            <a
+              href="{% url 'availability:availability_list' %}"
+              class="nav-link focus-ring rounded-md px-2 py-1.5 {% active_url 'availability:availability_list' startswith='/availability/list' %}"
+              {% aria_current 'availability:availability_list' startswith='/availability/list' %}
+            >
               <span>Availability</span>
             </a>
           {% endif %}
+
+          {# Profile #}
+          <a
+            href="{% url 'users:profile' %}"
+            class="nav-link focus-ring rounded-md px-2 py-1.5 {% active_url 'users:profile' 'users:profile_edit' 'users:change_password' startswith='/users/profile' %}"
+            {% aria_current 'users:profile' 'users:profile_edit' 'users:change_password' startswith='/users/profile' %}
+          >
+            {% icon 'verified_user' class_='h-5 w-5 align-middle shrink-0' %}
+            <span>Profile</span>
+          </a>
 
         {% endif %}
       </div>
@@ -105,14 +119,14 @@
     <div class="hidden sm:flex items-center gap-2 ml-auto">
       {% if request.user.is_authenticated %}
         {% if request.user|is_teacher %}
-          {% url 'users:teacher_home' as profile_href %}
+          {% url 'users:teacher_home' as home_href %}
         {% elif request.user|is_admin %}
-          {% url 'users:admin_home' as profile_href %}
+          {% url 'users:admin_home' as home_href %}
         {% else %}
-          {% url 'users:student_home' as profile_href %}
+          {% url 'users:student_home' as home_href %}
         {% endif %}
         <a
-          href="{{ profile_href }}"
+          href="{{ home_href }}"
           class="focus-ring inline-flex items-center gap-2 text-sm hover:text-foreground/80 px-2 py-1.5 rounded-md"
         >
           {% icon 'verified_user' class_='h-5 w-5 align-middle shrink-0' %}
@@ -259,14 +273,27 @@
         </a>
       {% elif request.user|is_teacher %}
         <a
-          href="#"
-          class="nav-link focus-ring flex w-full rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground"
+          href="{% url 'availability:availability_list' %}"
+          class="nav-link focus-ring flex w-full rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground {% active_url 'availability:availability_list' startswith='/availability/list' %}"
+          {% aria_current 'availability:availability_list' startswith='/availability/list' %}
           @click="open = false"
           role="menuitem"
         >
           <span>Availability</span>
         </a>
       {% endif %}
+
+      {# Profile link #}
+      <a
+        href="{% url 'users:profile' %}"
+        class="nav-link focus-ring flex w-full rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground {% active_url 'users:profile' 'users:profile_edit' 'users:change_password' startswith='/users/profile' %}"
+        {% aria_current 'users:profile' 'users:profile_edit' 'users:change_password' startswith='/users/profile' %}
+        @click="open = false"
+        role="menuitem"
+      >
+        {% icon 'verified_user' class_='h-5 w-5 align-middle shrink-0' %}
+        <span>Profile</span>
+      </a>
 
       <div class="py-1">
         {% include "core/partials/theme_toggle.html" with variant="mobile" %}

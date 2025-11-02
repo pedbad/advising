@@ -1,4 +1,5 @@
 {% extends "core/base.html" %}
+{% load user_roles %}
 
 {% block title %}{{ selected_date|date:"F j, Y" }} - Calendar - {{ SITE_NAME }}{% endblock %}
 
@@ -77,22 +78,27 @@
 
   {# Actions #}
   <div class="mt-6 flex gap-3">
-    <a
-      href="{% url 'availability:calendar_month' year month %}"
-      class="inline-flex items-center justify-center gap-2 h-9 px-4 py-2 rounded-md bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors text-sm font-medium"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-      </svg>
-      Back to Calendar
-    </a>
-
-    <a
-      href="{% url 'availability:calendar' %}"
-      class="inline-flex items-center justify-center gap-2 h-9 px-4 py-2 rounded-md border border-input bg-background shadow-xs hover:bg-accent hover:text-accent-foreground transition-colors text-sm font-medium"
-    >
-      Today
-    </a>
+    {% if request.user|is_teacher %}
+      <a
+        href="{% url 'users:teacher_calendar' %}"
+        class="inline-flex items-center justify-center gap-2 h-9 px-4 py-2 rounded-md bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors text-sm font-medium"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+        </svg>
+        Back to Calendar
+      </a>
+    {% else %}
+      <a
+        href="{% url 'users:admin_calendar' %}"
+        class="inline-flex items-center justify-center gap-2 h-9 px-4 py-2 rounded-md bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors text-sm font-medium"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+        </svg>
+        Back to Calendar
+      </a>
+    {% endif %}
   </div>
 </div>
 {% endblock %}

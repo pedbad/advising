@@ -1,0 +1,77 @@
+{% extends "core/base.html" %}
+
+{% block title %}Edit Profile - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+  {# Page Header #}
+  <div class="mb-6">
+    <h1 class="text-3xl font-bold mb-2">Edit Profile</h1>
+    <p class="text-muted-foreground">Update your personal information</p>
+  </div>
+
+  {# Edit Form Card #}
+  <c-card class="p-6">
+    <form method="post" class="space-y-4">
+      {% csrf_token %}
+
+      {# First Name #}
+      <div class="space-y-2">
+        <label for="{{ form.first_name.id_for_label }}" class="text-sm font-medium leading-none">
+          First Name
+        </label>
+        {{ form.first_name }}
+        {% if form.first_name.errors %}
+          <p class="text-sm text-destructive">{{ form.first_name.errors.0 }}</p>
+        {% endif %}
+      </div>
+
+      {# Last Name #}
+      <div class="space-y-2">
+        <label for="{{ form.last_name.id_for_label }}" class="text-sm font-medium leading-none">
+          Last Name
+        </label>
+        {{ form.last_name }}
+        {% if form.last_name.errors %}
+          <p class="text-sm text-destructive">{{ form.last_name.errors.0 }}</p>
+        {% endif %}
+      </div>
+
+      {# Email #}
+      <div class="space-y-2">
+        <label for="{{ form.email.id_for_label }}" class="text-sm font-medium leading-none">
+          Email <span class="text-destructive">*</span>
+        </label>
+        {{ form.email }}
+        {% if form.email.errors %}
+          <p class="text-sm text-destructive">{{ form.email.errors.0 }}</p>
+        {% endif %}
+        <p class="text-xs text-muted-foreground">This is your login email address.</p>
+      </div>
+
+      {# Form Errors #}
+      {% if form.non_field_errors %}
+        <div class="p-3 rounded-md bg-destructive/10 border border-destructive/20">
+          <p class="text-sm text-destructive">{{ form.non_field_errors.0 }}</p>
+        </div>
+      {% endif %}
+
+      {# Action Buttons #}
+      <div class="flex gap-3 pt-4">
+        <button
+          type="submit"
+          class="inline-flex items-center justify-center gap-2 h-9 px-4 py-2 rounded-md bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors text-sm font-medium"
+        >
+          Save Changes
+        </button>
+        <a
+          href="{% url 'users:profile' %}"
+          class="inline-flex items-center justify-center gap-2 h-9 px-4 py-2 rounded-md border border-input bg-background shadow-xs hover:bg-accent hover:text-accent-foreground transition-colors text-sm font-medium"
+        >
+          Cancel
+        </a>
+      </div>
+    </form>
+  </c-card>
+</div>
+{% endblock %}

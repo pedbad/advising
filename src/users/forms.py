@@ -23,6 +23,60 @@ class RegisterForm(DjangoUserCreationForm):
         fields = ("email",)
 
 
+# --- Profile update form (for logged-in users) ------------------------------
+class ProfileUpdateForm(forms.ModelForm):
+    """Form for users to update their own profile information."""
+
+    class Meta:
+        model = User
+        fields = ("first_name", "last_name", "email")
+        widgets = {
+            "first_name": forms.TextInput(
+                attrs={
+                    "class": (
+                        "flex h-9 w-full rounded-md border border-input bg-transparent "
+                        "px-3 py-1 text-sm shadow-xs transition-colors "
+                        "placeholder:text-muted-foreground focus-visible:outline-none "
+                        "focus-visible:ring-1 focus-visible:ring-ring "
+                        "disabled:cursor-not-allowed disabled:opacity-50"
+                    ),
+                    "placeholder": "First name",
+                }
+            ),
+            "last_name": forms.TextInput(
+                attrs={
+                    "class": (
+                        "flex h-9 w-full rounded-md border border-input bg-transparent "
+                        "px-3 py-1 text-sm shadow-xs transition-colors "
+                        "placeholder:text-muted-foreground focus-visible:outline-none "
+                        "focus-visible:ring-1 focus-visible:ring-ring "
+                        "disabled:cursor-not-allowed disabled:opacity-50"
+                    ),
+                    "placeholder": "Last name",
+                }
+            ),
+            "email": forms.EmailInput(
+                attrs={
+                    "class": (
+                        "flex h-9 w-full rounded-md border border-input bg-transparent "
+                        "px-3 py-1 text-sm shadow-xs transition-colors "
+                        "placeholder:text-muted-foreground focus-visible:outline-none "
+                        "focus-visible:ring-1 focus-visible:ring-ring "
+                        "disabled:cursor-not-allowed disabled:opacity-50"
+                    ),
+                    "placeholder": "Email address",
+                }
+            ),
+        }
+
+    def clean_email(self):
+        """Ensure email is unique, excluding the current user."""
+        email = self.cleaned_data.get("email")
+        if User.objects.exclude(pk=self.instance.pk).filter(email=email).exists():
+            raise forms.ValidationError("This email address is already in use.")
+        return email
+
+
 # --- Admin-only forms (Unfold-styled) ---------------------------------------
 class AdminUserAddForm(UnfoldUserCreationForm):
     """Used by Django admin Add User page (gives Unfold-styled password1/2)."""

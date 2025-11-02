@@ -3,7 +3,9 @@
 # Django imports
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, update_session_auth_hash
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.views import (
     LoginView,
@@ -21,7 +23,7 @@ from django.views.generic import CreateView
 # Local imports
 from .constants import PWD_RESET_TPLS  # ← centralised template names
 from .decorators import role_required
-from .forms import RegisterForm
+from .forms import ProfileUpdateForm, RegisterForm
 from .mixins import AdminRequiredMixin
 
 User = get_user_model()
@@ -187,3 +189,46 @@ def admin_calendar(request):
     }
 
     return render(request, "users/admin_calendar.html", context)
+
+
+# --------------------------
+# Profile views
+# --------------------------
+
+
+@login_required
+def profile_view(request):
+    """View user profile information."""
+    return render(request, "users/profile.html", {"user": request.user})
+
+
+@login_required
+def profile_edit(request):
+    """Edit user profile information."""
+    if request.method == "POST":
+        form = ProfileUpdateForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Your profile has been updated successfully.")
+            return redirect("users:profile")
+    else:
+        form = ProfileUpdateForm(instance=request.user)
+
+    return render(request, "users/profile_edit.html", {"form": form})
+
+
+@login_required
+def change_password(request):
+    """Change user password."""
+    if request.method == "POST":
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            # Keep the user logged in after password change
+            update_session_auth_hash(request, user)
+            messages.success(request, "Your password has been changed successfully.")
+            return redirect("users:profile")
+    else:
+        form = PasswordChangeForm(request.user)
+
+    return render(request, "users/change_password.html", {"form": form})

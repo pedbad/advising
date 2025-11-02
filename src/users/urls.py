@@ -16,7 +16,11 @@ urlpatterns = [
     path("teacher/calendar/", views.teacher_calendar, name="teacher_calendar"),
     path("admin-home/", views.admin_home, name="admin_home"),
     path("admin/calendar/", views.admin_calendar, name="admin_calendar"),
-    # password reset (Django’s built-in views, via our wrappers)
+    # profile
+    path("profile/", views.profile_view, name="profile"),
+    path("profile/edit/", views.profile_edit, name="profile_edit"),
+    path("profile/change-password/", views.change_password, name="change_password"),
+    # password reset (Django's built-in views, via our wrappers)
     path("password-reset/", views.PasswordResetStartView.as_view(), name="password_reset"),
     path(
         "password-reset/done/",

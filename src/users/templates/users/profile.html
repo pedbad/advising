@@ -1,0 +1,79 @@
+{% extends "core/base.html" %}
+
+{% block title %}Profile - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+  {# Page Header #}
+  <div class="mb-6">
+    <h1 class="text-3xl font-bold mb-2">My Profile</h1>
+    <p class="text-muted-foreground">View and manage your account information</p>
+  </div>
+
+  {# Profile Information Card #}
+  <c-card class="p-6 mb-6">
+    <div class="space-y-6">
+      {# Personal Information #}
+      <div>
+        <h2 class="text-xl font-semibold mb-4">Personal Information</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="flex flex-col gap-1">
+            <span class="text-sm text-muted-foreground">First Name</span>
+            <span class="text-base font-medium">{{ user.first_name|default:"Not set" }}</span>
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="text-sm text-muted-foreground">Last Name</span>
+            <span class="text-base font-medium">{{ user.last_name|default:"Not set" }}</span>
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="text-sm text-muted-foreground">Email</span>
+            <span class="text-base font-medium">{{ user.email }}</span>
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="text-sm text-muted-foreground">Role</span>
+            <span class="text-base font-medium capitalize">{{ user.get_role_display }}</span>
+          </div>
+        </div>
+      </div>
+
+      {# Account Information #}
+      <div class="border-t pt-4">
+        <h2 class="text-xl font-semibold mb-4">Account Information</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="flex flex-col gap-1">
+            <span class="text-sm text-muted-foreground">Member Since</span>
+            <span class="text-base font-medium">{{ user.date_joined|date:"F j, Y" }}</span>
+          </div>
+          <div class="flex flex-col gap-1">
+            <span class="text-sm text-muted-foreground">Last Login</span>
+            <span class="text-base font-medium">{{ user.last_login|date:"F j, Y, g:i A"|default:"Never" }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </c-card>
+
+  {# Actions #}
+  <div class="flex flex-wrap gap-3">
+    <a
+      href="{% url 'users:profile_edit' %}"
+      class="inline-flex items-center justify-center gap-2 h-9 px-4 py-2 rounded-md bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors text-sm font-medium"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+      </svg>
+      Edit Profile
+    </a>
+
+    <a
+      href="{% url 'users:change_password' %}"
+      class="inline-flex items-center justify-center gap-2 h-9 px-4 py-2 rounded-md border border-input bg-background shadow-xs hover:bg-accent hover:text-accent-foreground transition-colors text-sm font-medium"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+      </svg>
+      Change Password
+    </a>
+  </div>
+</div>
+{% endblock %}

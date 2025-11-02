@@ -43,14 +43,6 @@ def calendar_view(request, year=None, month=None):
     teacher = request.user if request.user.role == "teacher" else None
     calendar_data = get_calendar_data(year, month, teacher=teacher)
 
-    # Debug: print availability data
-    if teacher:
-        print(f"DEBUG: Calendar for teacher {teacher.email}, year={year}, month={month}")
-        for week in calendar_data["weeks"]:
-            for day_data in week:
-                if day_data["availability"]:
-                    print(f"  Day {day_data['day']}: {day_data['availability']}")
-
     context = {
         "calendar": calendar_data,
     }
@@ -99,6 +91,55 @@ def date_detail_view(request, year, month, day):
         return render(request, "availability/partials/time_slots.html", context)
 
     return render(request, "availability/date_detail.html", context)
+
+
+@role_required(["teacher"])
+def availability_list(request):
+    """
+    Display a list of upcoming dates with availability slots for the teacher.
+
+    Shows only dates that have at least one slot set, ordered chronologically.
+    Only shows the actual slots that are set (not all possible time slots).
+    Allows inline editing of slots.
+    """
+    from collections import OrderedDict
+
+    # Show only upcoming dates (today and future)
+    today = date.today()
+    availabilities = Availability.objects.filter(teacher=request.user, date__gte=today).order_by(
+        "date", "start_time"
+    )
+
+    # Group by date
+    dates_with_slots = OrderedDict()
+    for avail in availabilities:
+        if avail.date not in dates_with_slots:
+            dates_with_slots[avail.date] = []
+        dates_with_slots[avail.date].append(avail)
+
+    # For each date, only include the slots that are actually set
+    availability_by_date = []
+    for date_obj, slots in dates_with_slots.items():
+        # Generate all time slots to get blocking info
+        all_time_slots = generate_time_slots(date_obj, teacher=request.user)
+
+        # Filter to only show slots that are set (is_available = True)
+        set_slots = [slot for slot in all_time_slots if slot["is_available"]]
+
+        availability_by_date.append(
+            {
+                "date": date_obj,
+                "time_slots": set_slots,
+                "slot_count": len(set_slots),
+            }
+        )
+
+    context = {
+        "availability_by_date": availability_by_date,
+        "has_slots": len(availability_by_date) > 0,
+    }
+
+    return render(request, "availability/availability_list.html", context)
 
 
 @require_http_methods(["POST"])

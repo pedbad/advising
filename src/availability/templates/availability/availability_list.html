@@ -1,0 +1,201 @@
+{% extends "core/base.html" %}
+
+{% block title %}My Availability - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+  {# Page Header #}
+  <div class="mb-6">
+    <h1 class="text-3xl font-bold mb-2">My Availability</h1>
+    <p class="text-muted-foreground">View and manage your upcoming availability slots</p>
+  </div>
+
+  {# Availability List #}
+  {% if has_slots %}
+    <div class="space-y-6">
+      {% for item in availability_by_date %}
+        <c-card class="p-6">
+          {# Date Header #}
+          <div class="flex items-center justify-between mb-4 pb-4 border-b">
+            <div>
+              <h2 class="text-xl font-semibold">{{ item.date|date:"l, F j, Y" }}</h2>
+              <p class="text-sm text-muted-foreground mt-1">
+                {{ item.slot_count }} slot{{ item.slot_count|pluralize }} available
+              </p>
+            </div>
+            <a
+              href="{% url 'availability:date_detail' item.date.year item.date.month item.date.day %}"
+              class="inline-flex items-center gap-2 text-sm text-primary hover:underline"
+            >
+              View full day
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+              </svg>
+            </a>
+          </div>
+
+          {# Time Slots for this date #}
+          <div id="time-slots-wrapper-{{ item.date|date:'Y-m-d' }}">
+            <div class="space-y-2">
+              {% for slot in item.time_slots %}
+              <div
+                x-data="{
+                  slotTime: '{{ slot.start_time|time:"H:i:s" }}',
+                  selectedType: {% if slot.is_available %}'{{ slot.meeting_type }}'{% else %}null{% endif %},
+                  isBlocked: {{ slot.is_blocked|yesno:'true,false' }},
+                  blockingType: {% if slot.blocking_meeting_type %}'{{ slot.blocking_meeting_type }}'{% else %}null{% endif %},
+                  saving: false,
+
+                  isActive(type) {
+                    return this.selectedType === type;
+                  },
+
+                  async selectType(type) {
+                    if (this.saving) return;
+                    this.saving = true;
+
+                    const action = this.selectedType === type ? 'delete' : 'set';
+
+                    const formData = new FormData();
+                    formData.append('date', '{{ item.date|date:"Y-m-d" }}');
+                    formData.append('start_time', this.slotTime);
+                    formData.append('meeting_type', type);
+                    formData.append('action', action);
+                    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+                    try {
+                      const response = await fetch('{% url 'availability:save_availability' %}', {
+                        method: 'POST',
+                        headers: {
+                          'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: formData,
+                      });
+
+                      const data = await response.json();
+
+                      if (data.success) {
+                        // Reload the page to update the list
+                        window.location.reload();
+                      } else {
+                        alert('Error: ' + (data.error || 'Failed to save availability'));
+                        this.saving = false;
+                      }
+                    } catch (error) {
+                      console.error('Fetch error:', error);
+                      alert('Error: ' + error.message);
+                      this.saving = false;
+                    }
+                  }
+                }"
+                :class="{
+                  'opacity-60 bg-muted': isBlocked,
+                  'bg-card hover:bg-accent/50': !isBlocked
+                }"
+                class="flex items-center gap-3 p-3 rounded-lg border transition-colors"
+              >
+                {# Time Display #}
+                <div class="min-w-[180px]">
+                  <span class="text-sm font-medium">{{ slot.display_time }}</span>
+                </div>
+
+                {# Meeting Type Buttons or Blocked Message #}
+                <div class="flex gap-2 flex-1 items-center">
+                  <template x-if="!isBlocked">
+                    <div class="flex gap-2 flex-1">
+                      <button
+                        type="button"
+                        @click="selectType('online')"
+                        :disabled="saving"
+                        :class="{
+                          'bg-blue-500 text-white border-blue-600': isActive('online'),
+                          'border-input hover:bg-blue-100': !isActive('online')
+                        }"
+                        class="px-3 py-1.5 text-xs rounded-md border transition-colors disabled:opacity-50"
+                      >
+                        Online
+                      </button>
+
+                      <button
+                        type="button"
+                        @click="selectType('in_person')"
+                        :disabled="saving"
+                        :class="{
+                          'bg-green-500 text-white border-green-600': isActive('in_person'),
+                          'border-input hover:bg-green-100': !isActive('in_person')
+                        }"
+                        class="px-3 py-1.5 text-xs rounded-md border transition-colors disabled:opacity-50"
+                      >
+                        In-person
+                      </button>
+
+                      <button
+                        type="button"
+                        @click="selectType('both')"
+                        :disabled="saving"
+                        :class="{
+                          'bg-purple-500 text-white border-purple-600': isActive('both'),
+                          'border-input hover:bg-purple-100': !isActive('both')
+                        }"
+                        class="px-3 py-1.5 text-xs rounded-md border transition-colors disabled:opacity-50"
+                      >
+                        Both
+                      </button>
+                    </div>
+                  </template>
+
+                  <template x-if="isBlocked">
+                    <div class="flex-1 flex items-center gap-2">
+                      <span class="text-xs text-muted-foreground italic">
+                        Blocked by meeting above
+                      </span>
+                      <span
+                        x-show="blockingType === 'online'"
+                        class="px-2 py-1 text-xs rounded-md bg-blue-100 text-blue-700 border border-blue-300"
+                      >
+                        Online
+                      </span>
+                      <span
+                        x-show="blockingType === 'in_person'"
+                        class="px-2 py-1 text-xs rounded-md bg-green-100 text-green-700 border border-green-300"
+                      >
+                        In-person
+                      </span>
+                      <span
+                        x-show="blockingType === 'both'"
+                        class="px-2 py-1 text-xs rounded-md bg-purple-100 text-purple-700 border border-purple-300"
+                      >
+                        Both
+                      </span>
+                    </div>
+                  </template>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </c-card>
+      {% endfor %}
+    </div>
+  {% else %}
+    {# Empty State #}
+    <c-card class="p-12">
+      <div class="text-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        <h3 class="text-xl font-semibold mb-2">No Upcoming Availability</h3>
+        <p class="text-muted-foreground mb-6">
+          You don't have any upcoming availability slots. Set your availability using the calendar.
+        </p>
+        <a
+          href="{% url 'users:teacher_calendar' %}"
+          class="inline-flex items-center justify-center gap-2 h-9 px-4 py-2 rounded-md bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors text-sm font-medium"
+        >
+          Go to Calendar
+        </a>
+      </div>
+    </c-card>
+  {% endif %}
+</div>
+{% endblock %}
