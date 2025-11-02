@@ -119,6 +119,14 @@ def date_detail_view(request, year, month, day):
         viewing_teacher = request.user
         time_slots = generate_time_slots(selected_date, teacher=request.user)
 
+    # Calculate previous and next dates for navigation
+    from datetime import date as date_class
+
+    prev_date = selected_date - timedelta(days=1)
+    next_date = selected_date + timedelta(days=1)
+    today = date_class.today()
+    show_prev = prev_date >= today  # Only show previous button if not going to past
+
     context = {
         "selected_date": selected_date,
         "year": year,
@@ -128,6 +136,9 @@ def date_detail_view(request, year, month, day):
         "is_teacher": viewing_teacher is not None,
         "viewing_teacher": viewing_teacher,
         "is_admin_view": is_admin_view,
+        "prev_date": prev_date,
+        "next_date": next_date,
+        "show_prev": show_prev,
     }
 
     # If this is an HTMX request, return just the time slots partial
