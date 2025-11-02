@@ -10,7 +10,7 @@
   </p>
 
   {# Dashboard Cards #}
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
     {# Students Card #}
     <a href="{% url 'users:student_list' %}" class="block group">
       <c-card class="p-6 hover:shadow-lg transition-shadow duration-300">
@@ -54,6 +54,30 @@
           </h2>
           <p class="text-sm text-muted-foreground mt-2">
             View and manage all registered teachers
+          </p>
+        </div>
+      </c-card>
+    </a>
+
+    {# Upcoming Availability Card #}
+    <a href="{% url 'availability:upcoming_availability' %}" class="block group">
+      <c-card class="p-6 hover:shadow-lg transition-shadow duration-300">
+        <div class="flex flex-col items-center text-center">
+          {# Icon with circular background #}
+          <div class="flex items-center justify-center w-20 h-20 rounded-full bg-primary transition-all duration-200 transform group-hover:scale-110">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-primary-foreground">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-6h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 2.25h.008v.008H12v-.008ZM9.75 15h.008v.008H9.75V15Zm0 2.25h.008v.008H9.75v-.008ZM7.5 15h.008v.008H7.5V15Zm0 2.25h.008v.008H7.5v-.008Zm6.75-4.5h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V15Zm0 2.25h.008v.008h-.008v-.008Zm2.25-4.5h.008v.008H16.5v-.008Zm0 2.25h.008v.008H16.5V15Z" />
+            </svg>
+          </div>
+          {# Title #}
+          <h2 class="text-xl font-semibold mt-4 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+            </svg>
+            Upcoming Availability
+          </h2>
+          <p class="text-sm text-muted-foreground mt-2">
+            View all teacher availability slots
           </p>
         </div>
       </c-card>

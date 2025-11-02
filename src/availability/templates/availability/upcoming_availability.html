@@ -1,0 +1,239 @@
+{% extends "core/base.html" %}
+
+{% block title %}Upcoming Availability - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+  {# Header #}
+  <div class="mb-6 flex items-center justify-between">
+    <div>
+      <h1 class="text-3xl font-bold mb-2">Upcoming Availability</h1>
+      <p class="text-muted-foreground">View all upcoming availability slots from all teachers</p>
+    </div>
+    <a
+      href="{% url 'users:admin_home' %}"
+      class="inline-flex items-center justify-center gap-2 h-9 px-4 py-2 rounded-md border border-input bg-background shadow-xs hover:bg-accent hover:text-accent-foreground transition-colors text-sm font-medium"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+      </svg>
+      Back to Dashboard
+    </a>
+  </div>
+
+  {% if has_slots %}
+    <div x-data="{
+      groupBy: 'date',
+      filter: 'all',
+      getFilteredSlots(slots) {
+        if (this.filter === 'all') return slots;
+        return slots.filter(slot => slot.dataset.meetingType === this.filter);
+      }
+    }">
+      {# Controls: Group By and Filters #}
+      <c-card class="mb-6 p-6">
+        <div class="space-y-4">
+          {# Group By Toggle #}
+          <div>
+            <label class="text-sm font-medium mb-2 block">View:</label>
+            <div class="flex gap-2">
+              <button
+                @click="groupBy = 'date'"
+                :class="groupBy === 'date' ? 'bg-primary text-primary-foreground' : 'bg-background border border-input hover:bg-accent'"
+                class="px-4 py-2 rounded-md text-sm font-medium transition-colors"
+              >
+                Sort by Date/Time
+              </button>
+              <button
+                @click="groupBy = 'teacher'"
+                :class="groupBy === 'teacher' ? 'bg-primary text-primary-foreground' : 'bg-background border border-input hover:bg-accent'"
+                class="px-4 py-2 rounded-md text-sm font-medium transition-colors"
+              >
+                Group by Teacher
+              </button>
+            </div>
+          </div>
+
+          {# Meeting Type Filters #}
+          <div>
+            <label class="text-sm font-medium mb-2 block">Filter by meeting type:</label>
+            <div class="flex flex-wrap gap-2">
+              <button
+                @click="filter = 'all'"
+                :class="filter === 'all' ? 'bg-primary text-primary-foreground' : 'bg-background border border-input hover:bg-accent'"
+                class="px-4 py-2 rounded-md text-sm font-medium transition-colors"
+              >
+                All
+              </button>
+              <button
+                @click="filter = 'online'"
+                :class="filter === 'online' ? 'bg-blue-500 text-white' : 'bg-background border border-input hover:bg-accent'"
+                class="px-4 py-2 rounded-md text-sm font-medium transition-colors"
+              >
+                Online
+              </button>
+              <button
+                @click="filter = 'in_person'"
+                :class="filter === 'in_person' ? 'bg-green-500 text-white' : 'bg-background border border-input hover:bg-accent'"
+                class="px-4 py-2 rounded-md text-sm font-medium transition-colors"
+              >
+                In-Person
+              </button>
+              <button
+                @click="filter = 'both'"
+                :class="filter === 'both' ? 'bg-purple-500 text-white' : 'bg-background border border-input hover:bg-accent'"
+                class="px-4 py-2 rounded-md text-sm font-medium transition-colors"
+              >
+                Both
+              </button>
+            </div>
+          </div>
+        </div>
+      </c-card>
+
+      {# Sorted by Date View #}
+      <div x-show="groupBy === 'date'" x-transition>
+        {% for date, slots in availabilities_by_date.items %}
+          <c-card class="mb-4">
+            <div class="border-b bg-muted/30 px-6 py-4">
+              <h2 class="text-xl font-semibold">
+                {% if date == today %}
+                  Today
+                {% elif date == tomorrow %}
+                  Tomorrow
+                {% else %}
+                  {{ date|date:"l, F j, Y" }}
+                {% endif %}
+              </h2>
+            </div>
+            <div class="p-6">
+              <div class="space-y-3">
+                {% for slot in slots %}
+                  <div
+                    class="flex items-center gap-4 p-4 rounded-lg border hover:bg-accent/50 transition-colors"
+                    data-meeting-type="{{ slot.meeting_type }}"
+                    x-show="filter === 'all' || filter === '{{ slot.meeting_type }}'"
+                  >
+                    {# Time #}
+                    <div class="flex-shrink-0 w-40">
+                      <div class="font-medium">{{ slot.start_time|time:"g:i A" }} - {{ slot.end_time|time:"g:i A" }}</div>
+                    </div>
+
+                    {# Teacher Info #}
+                    <div class="flex-1">
+                      <div class="font-medium">{{ slot.teacher.get_full_name|default:slot.teacher.email }}</div>
+                      <div class="text-sm text-muted-foreground">{{ slot.teacher.email }}</div>
+                    </div>
+
+                    {# Meeting Type Badge #}
+                    <div class="flex-shrink-0">
+                      {% if slot.meeting_type == 'online' %}
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                          <div class="h-2 w-2 rounded-full bg-blue-500"></div>
+                          Online
+                        </span>
+                      {% elif slot.meeting_type == 'in_person' %}
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                          <div class="h-2 w-2 rounded-full bg-green-500"></div>
+                          In-Person
+                        </span>
+                      {% elif slot.meeting_type == 'both' %}
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                          <div class="h-2 w-2 rounded-full bg-purple-500"></div>
+                          Both
+                        </span>
+                      {% endif %}
+                    </div>
+
+                    {# Message (if present) #}
+                    {% if slot.message %}
+                      <div class="flex-shrink-0">
+                        <div class="px-3 py-1.5 text-xs rounded-md bg-amber-50 border border-amber-200 text-amber-900 max-w-xs">
+                          <span class="font-medium">Note:</span> {{ slot.message }}
+                        </div>
+                      </div>
+                    {% endif %}
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          </c-card>
+        {% endfor %}
+      </div>
+
+      {# Grouped by Teacher View #}
+      <div x-show="groupBy === 'teacher'" x-transition style="display: none;">
+        {% for teacher_data in availabilities_by_teacher %}
+          <c-card class="mb-4">
+            <div class="border-b bg-muted/30 px-6 py-4">
+              <h2 class="text-xl font-semibold">{{ teacher_data.teacher.get_full_name|default:teacher_data.teacher.email }}</h2>
+              <p class="text-sm text-muted-foreground">{{ teacher_data.teacher.email }}</p>
+            </div>
+            <div class="p-6">
+              <div class="space-y-3">
+                {% for slot in teacher_data.slots %}
+                  <div
+                    class="flex items-center gap-4 p-4 rounded-lg border hover:bg-accent/50 transition-colors"
+                    data-meeting-type="{{ slot.meeting_type }}"
+                    x-show="filter === 'all' || filter === '{{ slot.meeting_type }}'"
+                  >
+                    {# Date #}
+                    <div class="flex-shrink-0 w-48">
+                      <div class="font-medium">{{ slot.date|date:"l, M j, Y" }}</div>
+                    </div>
+
+                    {# Time #}
+                    <div class="flex-shrink-0 w-40">
+                      <div class="font-medium">{{ slot.start_time|time:"g:i A" }} - {{ slot.end_time|time:"g:i A" }}</div>
+                    </div>
+
+                    {# Meeting Type Badge #}
+                    <div class="flex-shrink-0">
+                      {% if slot.meeting_type == 'online' %}
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                          <div class="h-2 w-2 rounded-full bg-blue-500"></div>
+                          Online
+                        </span>
+                      {% elif slot.meeting_type == 'in_person' %}
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                          <div class="h-2 w-2 rounded-full bg-green-500"></div>
+                          In-Person
+                        </span>
+                      {% elif slot.meeting_type == 'both' %}
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                          <div class="h-2 w-2 rounded-full bg-purple-500"></div>
+                          Both
+                        </span>
+                      {% endif %}
+                    </div>
+
+                    {# Message (if present) #}
+                    {% if slot.message %}
+                      <div class="flex-1">
+                        <div class="px-3 py-1.5 text-xs rounded-md bg-amber-50 border border-amber-200 text-amber-900">
+                          <span class="font-medium">Note:</span> {{ slot.message }}
+                        </div>
+                      </div>
+                    {% endif %}
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          </c-card>
+        {% endfor %}
+      </div>
+    </div>
+  {% else %}
+    {# Empty State #}
+    <c-card class="p-12">
+      <div class="text-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        <h3 class="text-xl font-semibold mb-2">No Upcoming Availability</h3>
+        <p class="text-muted-foreground">There are no availability slots set by teachers yet.</p>
+      </div>
+    </c-card>
+  {% endif %}
+</div>
+{% endblock %}

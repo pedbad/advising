@@ -197,6 +197,55 @@ def availability_list(request):
     return render(request, "availability/availability_list.html", context)
 
 
+@role_required(["admin"])
+def upcoming_availability_list(request):
+    """
+    Display a list of all upcoming availability slots from all teachers.
+
+    Admin-only view that shows all availability slots from today onwards,
+    with options to filter by meeting type and group by teacher or date.
+    """
+    from collections import OrderedDict
+
+    # Show only upcoming dates (today and future)
+    today = date.today()
+    tomorrow = today + timedelta(days=1)
+    availabilities = (
+        Availability.objects.filter(date__gte=today)
+        .select_related("teacher")
+        .order_by("date", "start_time", "teacher__last_name", "teacher__first_name")
+    )
+
+    # Prepare data for both grouping options
+    # Group by teacher
+    by_teacher = OrderedDict()
+    for avail in availabilities:
+        teacher_key = avail.teacher.id
+        if teacher_key not in by_teacher:
+            by_teacher[teacher_key] = {
+                "teacher": avail.teacher,
+                "slots": [],
+            }
+        by_teacher[teacher_key]["slots"].append(avail)
+
+    # Group by date
+    by_date = OrderedDict()
+    for avail in availabilities:
+        if avail.date not in by_date:
+            by_date[avail.date] = []
+        by_date[avail.date].append(avail)
+
+    context = {
+        "availabilities_by_teacher": list(by_teacher.values()),
+        "availabilities_by_date": by_date,
+        "has_slots": len(availabilities) > 0,
+        "today": today,
+        "tomorrow": tomorrow,
+    }
+
+    return render(request, "availability/upcoming_availability.html", context)
+
+
 @require_http_methods(["POST"])
 @role_required(["teacher", "admin"])
 def save_availability(request):
