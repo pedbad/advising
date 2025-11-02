@@ -8,13 +8,23 @@
   {# Breadcrumb Navigation #}
   <div class="mb-6">
     <nav class="flex items-center gap-2 text-sm text-muted-foreground">
-      <a href="{% url 'availability:calendar' %}" class="hover:text-foreground transition-colors">Calendar</a>
+      {% if is_admin_view and viewing_teacher %}
+        <a href="{% url 'users:admin_teacher_calendar' viewing_teacher.id %}" class="hover:text-foreground transition-colors">Calendar</a>
+      {% else %}
+        <a href="{% url 'availability:calendar' %}" class="hover:text-foreground transition-colors">Calendar</a>
+      {% endif %}
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
         <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
       </svg>
-      <a href="{% url 'availability:calendar_month' year month %}" class="hover:text-foreground transition-colors">
-        {{ selected_date|date:"F Y" }}
-      </a>
+      {% if is_admin_view and viewing_teacher %}
+        <a href="{% url 'users:admin_teacher_calendar' viewing_teacher.id %}" class="hover:text-foreground transition-colors">
+          {{ selected_date|date:"F Y" }}
+        </a>
+      {% else %}
+        <a href="{% url 'availability:calendar_month' year month %}" class="hover:text-foreground transition-colors">
+          {{ selected_date|date:"F Y" }}
+        </a>
+      {% endif %}
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
         <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
       </svg>
@@ -78,9 +88,19 @@
 
   {# Actions #}
   <div class="mt-6 flex gap-3">
-    {% if request.user|is_teacher %}
+    {% if is_admin_view and viewing_teacher %}
+      {# Admin viewing teacher's calendar - back to teacher list #}
       <a
-        href="{% url 'users:teacher_calendar' %}"
+        href="{% url 'users:teacher_list' %}"
+        class="inline-flex items-center justify-center gap-2 h-9 px-4 py-2 rounded-md border border-input bg-background hover:bg-accent transition-colors text-sm font-medium"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+        </svg>
+        Back to Teachers
+      </a>
+      <a
+        href="{% url 'users:admin_teacher_calendar' viewing_teacher.id %}"
         class="inline-flex items-center justify-center gap-2 h-9 px-4 py-2 rounded-md bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors text-sm font-medium"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -88,9 +108,10 @@
         </svg>
         Back to Calendar
       </a>
-    {% else %}
+    {% elif request.user|is_teacher %}
+      {# Teacher viewing their own calendar #}
       <a
-        href="{% url 'users:admin_calendar' %}"
+        href="{% url 'users:teacher_calendar' %}"
         class="inline-flex items-center justify-center gap-2 h-9 px-4 py-2 rounded-md bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors text-sm font-medium"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">

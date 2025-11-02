@@ -31,6 +31,9 @@
         formData.append('meeting_type', type);
         formData.append('action', action);
         formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+        {% if is_admin_view and viewing_teacher %}
+        formData.append('teacher_id', '{{ viewing_teacher.id }}');
+        {% endif %}
 
         try {
           const response = await fetch('{% url 'availability:save_availability' %}', {
@@ -51,7 +54,8 @@
             const scrollTop = container ? container.scrollTop : 0;
 
             // Trigger HTMX to reload just the time slots section
-            htmx.ajax('GET', window.location.pathname, {
+            // Use pathname + search to preserve query parameters (e.g., ?teacher_id=2)
+            htmx.ajax('GET', window.location.pathname + window.location.search, {
               target: '#time-slots-wrapper',
               swap: 'innerHTML show:none'
             }).then(() => {

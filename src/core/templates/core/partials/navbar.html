@@ -44,17 +44,12 @@
 
         {% if request.user.is_authenticated %}
 
-          {# Calendar (teachers and admins only) #}
-          {% if request.user|is_teacher or request.user|is_admin %}
-            {% aria_current 'users:teacher_calendar' 'users:admin_calendar' as current_attr %}
+          {# Calendar (teachers only) #}
+          {% if request.user|is_teacher %}
             <a
-              {% if request.user|is_teacher %}
-                href="{% url 'users:teacher_calendar' %}"
-              {% else %}
-                href="{% url 'users:admin_calendar' %}"
-              {% endif %}
-              class="nav-link focus-ring flex w-full rounded-md px-3 py-2 {% active_url 'users:teacher_calendar' 'users:admin_calendar' %}"
-              {{ current_attr }}
+              href="{% url 'users:teacher_calendar' %}"
+              class="nav-link focus-ring rounded-md px-2 py-1.5 {% active_url 'users:teacher_calendar' %}"
+              {% aria_current 'users:teacher_calendar' %}
             >
               {% icon 'dashboard' class_='h-5 w-5 align-middle shrink-0' %}
               <span>Calendar</span>
@@ -213,17 +208,12 @@
 
     {% if request.user.is_authenticated %}
 
-      {# Calendar (teachers and admins only) #}
-      {% if request.user|is_teacher or request.user|is_admin %}
-        {% aria_current 'users:teacher_calendar' 'users:admin_calendar' as current_attr %}
+      {# Calendar (teachers only) #}
+      {% if request.user|is_teacher %}
         <a
-          {% if request.user|is_teacher %}
-            href="{% url 'users:teacher_calendar' %}"
-          {% else %}
-            href="{% url 'users:admin_calendar' %}"
-          {% endif %}
-          class="nav-link focus-ring flex w-full rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground {% active_url 'users:teacher_calendar' 'users:admin_calendar' %}"
-          {{ current_attr }}
+          href="{% url 'users:teacher_calendar' %}"
+          class="nav-link focus-ring flex w-full rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground {% active_url 'users:teacher_calendar' %}"
+          {% aria_current 'users:teacher_calendar' %}
           @click="open = false"
           role="menuitem"
         >

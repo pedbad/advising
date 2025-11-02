@@ -15,7 +15,11 @@ urlpatterns = [
     path("teacher/", views.teacher_home, name="teacher_home"),
     path("teacher/calendar/", views.teacher_calendar, name="teacher_calendar"),
     path("admin-home/", views.admin_home, name="admin_home"),
-    path("admin/calendar/", views.admin_calendar, name="admin_calendar"),
+    path(
+        "admin/teacher/<int:teacher_id>/calendar/",
+        views.admin_teacher_calendar,
+        name="admin_teacher_calendar",
+    ),
     # admin lists
     path("students/", views.student_list, name="student_list"),
     path("teachers/", views.teacher_list, name="teacher_list"),

@@ -174,21 +174,31 @@ def admin_home(request):
 
 
 @role_required(["admin"])
-def admin_calendar(request):
-    """Admin calendar view."""
+def admin_teacher_calendar(request, teacher_id):
+    """
+    Admin view of a specific teacher's calendar.
+
+    Allows admins to view and manage availability on behalf of a teacher.
+    """
     from datetime import date
+
+    from django.shortcuts import get_object_or_404
 
     from availability.utils import get_calendar_data
 
+    # Get the teacher
+    teacher = get_object_or_404(User, id=teacher_id, role=User.Roles.TEACHER)
+
     today = date.today()
-    # Admins won't see availability indicators (they're not teachers)
-    calendar_data = get_calendar_data(today.year, today.month, teacher=None)
+    calendar_data = get_calendar_data(today.year, today.month, teacher=teacher)
 
     context = {
         "calendar": calendar_data,
+        "viewing_teacher": teacher,  # Pass the teacher being viewed
+        "is_admin_view": True,  # Flag to indicate admin is viewing
     }
 
-    return render(request, "users/admin_calendar.html", context)
+    return render(request, "users/admin_teacher_calendar.html", context)
 
 
 # --------------------------
