@@ -13,7 +13,9 @@ urlpatterns = [
     # dashboards / placeholders (so redirects resolve without other apps)
     path("student/", views.student_home, name="student_home"),
     path("teacher/", views.teacher_home, name="teacher_home"),
+    path("teacher/calendar/", views.teacher_calendar, name="teacher_calendar"),
     path("admin-home/", views.admin_home, name="admin_home"),
+    path("admin/calendar/", views.admin_calendar, name="admin_calendar"),
     # password reset (Django’s built-in views, via our wrappers)
     path("password-reset/", views.PasswordResetStartView.as_view(), name="password_reset"),
     path(

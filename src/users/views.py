@@ -144,7 +144,13 @@ def student_home(request):
 
 @role_required(["teacher"])
 def teacher_home(request):
-    """Teacher home page with calendar."""
+    """Teacher home page placeholder."""
+    return render(request, "users/teacher_home.html")
+
+
+@role_required(["teacher"])
+def teacher_calendar(request):
+    """Teacher calendar view."""
     from datetime import date
 
     from availability.utils import get_calendar_data
@@ -156,12 +162,18 @@ def teacher_home(request):
         "calendar": calendar_data,
     }
 
-    return render(request, "users/teacher_home.html", context)
+    return render(request, "users/teacher_calendar.html", context)
 
 
 @role_required(["admin"])
 def admin_home(request):
-    """Admin home page with calendar."""
+    """Admin home page placeholder."""
+    return render(request, "users/admin_home.html")
+
+
+@role_required(["admin"])
+def admin_calendar(request):
+    """Admin calendar view."""
     from datetime import date
 
     from availability.utils import get_calendar_data
@@ -173,4 +185,4 @@ def admin_home(request):
         "calendar": calendar_data,
     }
 
-    return render(request, "users/admin_home.html", context)
+    return render(request, "users/admin_calendar.html", context)
