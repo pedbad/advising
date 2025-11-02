@@ -100,7 +100,7 @@
                 </div>
 
                 {# Meeting Type Buttons or Blocked Message #}
-                <div class="flex gap-2 flex-1 items-center">
+                <div class="flex gap-2 flex-1 items-center flex-wrap">
                   <template x-if="!isBlocked">
                     <div class="flex gap-2 flex-1">
                       <button
@@ -141,6 +141,13 @@
                       >
                         Both
                       </button>
+
+                      {# Message Display #}
+                      {% if slot.message %}
+                      <div class="w-full mt-2 px-3 py-2 text-xs rounded-md bg-amber-50 border border-amber-200 text-amber-900">
+                        <span class="font-medium">Note:</span> {{ slot.message }}
+                      </div>
+                      {% endif %}
                     </div>
                   </template>
 

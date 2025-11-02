@@ -196,6 +196,7 @@ def save_availability(request):
     - date: YYYY-MM-DD
     - start_time: HH:MM
     - meeting_type: online|in_person|both
+    - message: (optional) short message or note for the time slot
     - action: set|delete
     - teacher_id: (optional, for admin editing on behalf of teacher)
     """
@@ -206,6 +207,7 @@ def save_availability(request):
         date_str = request.POST.get("date")
         start_time_str = request.POST.get("start_time")
         meeting_type = request.POST.get("meeting_type")
+        message = request.POST.get("message", "")
         action = request.POST.get("action", "set")
         teacher_id = request.POST.get("teacher_id")
 
@@ -253,6 +255,7 @@ def save_availability(request):
                 defaults={
                     "end_time": end_time,
                     "meeting_type": meeting_type,
+                    "message": message,
                 },
             )
 

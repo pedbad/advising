@@ -5,6 +5,7 @@
     x-data="{
       slotTime: '{{ slot.start_time|time:"H:i:s" }}',
       selectedType: {% if slot.is_available %}'{{ slot.meeting_type }}'{% else %}null{% endif %},
+      message: '{{ slot.message|escapejs }}',
       isBlocked: {{ slot.is_blocked|yesno:'true,false' }},
       blockingType: {% if slot.blocking_meeting_type %}'{{ slot.blocking_meeting_type }}'{% else %}null{% endif %},
       saving: false,
@@ -29,6 +30,7 @@
         formData.append('date', '{{ selected_date|date:"Y-m-d" }}');
         formData.append('start_time', this.slotTime);
         formData.append('meeting_type', type);
+        formData.append('message', this.message);
         formData.append('action', action);
         formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
         {% if is_admin_view and viewing_teacher %}
@@ -74,6 +76,49 @@
           alert('Error: ' + error.message);
           this.saving = false;
         }
+      },
+
+      async saveMessage() {
+        console.log('saveMessage called');
+        if (this.saving || !this.selectedType) return;
+        this.saving = true;
+
+        const formData = new FormData();
+        formData.append('date', '{{ selected_date|date:"Y-m-d" }}');
+        formData.append('start_time', this.slotTime);
+        formData.append('meeting_type', this.selectedType);
+        formData.append('message', this.message);
+        formData.append('action', 'set');
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+        {% if is_admin_view and viewing_teacher %}
+        formData.append('teacher_id', '{{ viewing_teacher.id }}');
+        {% endif %}
+
+        try {
+          const response = await fetch('{% url 'availability:save_availability' %}', {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: formData,
+          });
+
+          console.log('saveMessage response status:', response.status);
+          const data = await response.json();
+          console.log('saveMessage response data:', data);
+
+          if (data.success) {
+            console.log('Message saved successfully');
+            this.saving = false;
+          } else {
+            alert('Error: ' + (data.error || 'Failed to save message'));
+            this.saving = false;
+          }
+        } catch (error) {
+          console.error('saveMessage fetch error:', error);
+          alert('Error: ' + error.message);
+          this.saving = false;
+        }
       }
     }"
     :class="{
@@ -90,7 +135,7 @@
     {# Meeting Type Buttons or Blocked Message #}
     <div class="flex gap-2 flex-1 items-center">
       <template x-if="!isBlocked">
-        <div class="flex gap-2 flex-1">
+        <div class="flex gap-2 flex-1 items-center">
           <button
             type="button"
             @click="selectType('online')"
@@ -129,6 +174,18 @@
           >
             Both
           </button>
+
+          {# Message Input Field #}
+          <input
+            type="text"
+            x-model="message"
+            placeholder="Optional note..."
+            maxlength="200"
+            :disabled="!selectedType || saving"
+            @keydown.enter="saveMessage()"
+            @blur="saveMessage()"
+            class="flex-1 px-3 py-1.5 text-xs rounded-md border border-input bg-background focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
+          >
         </div>
       </template>
 

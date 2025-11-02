@@ -158,6 +158,7 @@ def generate_time_slots(selected_date: date, teacher=None) -> list[dict]:
         - is_available: Boolean (if teacher has set availability)
         - meeting_type: str or None (online/in_person/both)
         - availability_id: int or None (database ID if exists)
+        - message: str (optional message for the time slot)
     """
     config = settings.AVAILABILITY_SETTINGS
     start_hour, start_minute = map(int, config["START_TIME"].split(":"))
@@ -176,6 +177,7 @@ def generate_time_slots(selected_date: date, teacher=None) -> list[dict]:
             existing_availabilities[avail.start_time] = {
                 "meeting_type": avail.meeting_type,
                 "availability_id": avail.id,
+                "message": avail.message,
             }
 
     slots = []
@@ -223,6 +225,7 @@ def generate_time_slots(selected_date: date, teacher=None) -> list[dict]:
                 "is_available": avail_data is not None,
                 "meeting_type": avail_data["meeting_type"] if avail_data else None,
                 "availability_id": avail_data["availability_id"] if avail_data else None,
+                "message": avail_data["message"] if avail_data else "",
                 "is_blocked": is_blocked,
                 "blocking_meeting_type": blocking_meeting_type,
             }

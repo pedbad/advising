@@ -36,6 +36,12 @@ class Availability(models.Model):
         choices=MeetingType.choices,
         default=MeetingType.BOTH,
     )
+    message = models.CharField(
+        max_length=200,
+        blank=True,
+        default="",
+        help_text="Optional short message or note for this time slot (max 200 characters)",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
