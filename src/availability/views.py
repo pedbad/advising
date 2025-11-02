@@ -85,6 +85,10 @@ def date_detail_view(request, year, month, day):
         "is_teacher": is_teacher,
     }
 
+    # If this is an HTMX request, return just the time slots partial
+    if request.headers.get("HX-Request"):
+        return render(request, "availability/partials/time_slots.html", context)
+
     return render(request, "availability/date_detail.html", context)
 
 

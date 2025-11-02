@@ -157,7 +157,12 @@ def generate_time_slots(selected_date: date, teacher=None) -> list[dict]:
 
     while current_time < end_time_dt:
         slot_start = current_time.time()
-        slot_end = (current_time + timedelta(minutes=meeting_duration)).time()
+        slot_end_dt = current_time + timedelta(minutes=meeting_duration)
+        slot_end = slot_end_dt.time()
+
+        # Skip this slot if the meeting would extend past the end time
+        if slot_end_dt > end_time_dt:
+            break
 
         # Check if this slot has availability (i.e., this is the start of a meeting)
         avail_data = existing_availabilities.get(slot_start)
