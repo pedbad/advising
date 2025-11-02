@@ -14,4 +14,6 @@ urlpatterns = [
     path("calendar/<int:year>/<int:month>/", views.calendar_view, name="calendar_month"),
     # Date detail view
     path("date/<int:year>/<int:month>/<int:day>/", views.date_detail_view, name="date_detail"),
+    # AJAX endpoint for saving availability
+    path("api/save-availability/", views.save_availability, name="save_availability"),
 ]

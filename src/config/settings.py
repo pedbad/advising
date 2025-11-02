@@ -295,3 +295,14 @@ UNFOLD = {
     # Optionally add later:
     # "SITE_LOGO": "core/img/logo.svg",  # must exist under static/
 }
+
+
+# ----------------------------------------------------------------------
+# Availability Settings
+# ----------------------------------------------------------------------
+AVAILABILITY_SETTINGS = {
+    "START_TIME": "06:00",  # Start of available time slots (24-hour format)
+    "END_TIME": "23:00",  # End of available time slots (24-hour format)
+    "SLOT_DURATION": 15,  # Duration of each time slot in minutes
+    "MEETING_DURATION": 30,  # Duration of meetings in minutes (always 30)
+}
