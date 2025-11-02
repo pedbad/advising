@@ -156,7 +156,7 @@ def teacher_calendar(request):
     from availability.utils import get_calendar_data
 
     today = date.today()
-    calendar_data = get_calendar_data(today.year, today.month)
+    calendar_data = get_calendar_data(today.year, today.month, teacher=request.user)
 
     context = {
         "calendar": calendar_data,
@@ -179,7 +179,8 @@ def admin_calendar(request):
     from availability.utils import get_calendar_data
 
     today = date.today()
-    calendar_data = get_calendar_data(today.year, today.month)
+    # Admins won't see availability indicators (they're not teachers)
+    calendar_data = get_calendar_data(today.year, today.month, teacher=None)
 
     context = {
         "calendar": calendar_data,

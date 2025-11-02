@@ -8,13 +8,14 @@ from datetime import date, datetime, time, timedelta
 from django.conf import settings
 
 
-def get_calendar_data(year: int, month: int) -> dict:
+def get_calendar_data(year: int, month: int, teacher=None) -> dict:
     """
     Generate calendar data for a given year and month.
 
     Args:
         year: The year (e.g., 2025)
         month: The month (1-12)
+        teacher: Optional teacher User object to show availability counts
 
     Returns:
         Dictionary containing:
@@ -32,6 +33,36 @@ def get_calendar_data(year: int, month: int) -> dict:
     # Get current date for highlighting
     today = date.today()
 
+    # Get availability data for this teacher and month
+    availability_by_date = {}
+    if teacher:
+        from .models import Availability
+
+        # Get all availabilities for this teacher in this month
+        first_day = date(year, month, 1)
+        # Get last day of month
+        if month == 12:
+            last_day = date(year + 1, 1, 1) - timedelta(days=1)
+        else:
+            last_day = date(year, month + 1, 1) - timedelta(days=1)
+
+        availabilities = Availability.objects.filter(
+            teacher=teacher, date__gte=first_day, date__lte=last_day
+        ).values("date", "meeting_type")
+
+        # Group by date and count meeting types
+        for avail in availabilities:
+            day_num = avail["date"].day
+            if day_num not in availability_by_date:
+                availability_by_date[day_num] = {
+                    "total": 0,
+                    "online": 0,
+                    "in_person": 0,
+                    "both": 0,
+                }
+            availability_by_date[day_num]["total"] += 1
+            availability_by_date[day_num][avail["meeting_type"]] += 1
+
     # Build weeks with day information
     weeks = []
     for week in cal:
@@ -44,15 +75,18 @@ def get_calendar_data(year: int, month: int) -> dict:
                         "day": None,
                         "is_today": False,
                         "is_current_month": False,
+                        "availability": None,
                     }
                 )
             else:
                 is_today = day == today.day and month == today.month and year == today.year
+                availability_info = availability_by_date.get(day)
                 week_data.append(
                     {
                         "day": day,
                         "is_today": is_today,
                         "is_current_month": True,
+                        "availability": availability_info,
                     }
                 )
         weeks.append(week_data)

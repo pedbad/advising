@@ -39,8 +39,17 @@ def calendar_view(request, year=None, month=None):
         # Invalid year/month, redirect to current month
         return redirect("availability:calendar")
 
-    # Get calendar data
-    calendar_data = get_calendar_data(year, month)
+    # Get calendar data with teacher availability info
+    teacher = request.user if request.user.role == "teacher" else None
+    calendar_data = get_calendar_data(year, month, teacher=teacher)
+
+    # Debug: print availability data
+    if teacher:
+        print(f"DEBUG: Calendar for teacher {teacher.email}, year={year}, month={month}")
+        for week in calendar_data["weeks"]:
+            for day_data in week:
+                if day_data["availability"]:
+                    print(f"  Day {day_data['day']}: {day_data['availability']}")
 
     context = {
         "calendar": calendar_data,
