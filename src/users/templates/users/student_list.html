@@ -10,8 +10,9 @@
       <h1 class="text-3xl font-bold mb-2">All Students</h1>
       <p class="text-muted-foreground">Total: {{ students|length }} student{{ students|length|pluralize }}</p>
     </div>
+    {% load user_roles %}
     <a
-      href="{% url 'users:admin_home' %}"
+      href="{% if request.user|is_admin %}{% url 'users:admin_home' %}{% else %}{% url 'users:teacher_home' %}{% endif %}"
       class="inline-flex items-center justify-center gap-2 h-9 px-4 py-2 rounded-md border border-input bg-background shadow-xs hover:bg-accent hover:text-accent-foreground transition-colors text-sm font-medium"
     >
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">

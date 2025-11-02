@@ -1,16 +1,92 @@
 {% extends "core/base.html" %}
 
-{% block title %}Teacher Home - {{ SITE_NAME }}{% endblock %}
+{% block title %}Teacher Dashboard - {{ SITE_NAME }}{% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto p-6">
-  <h1 class="text-2xl font-semibold mb-2">Teacher home</h1>
-  <p class="text-sm mb-4">Welcome, {{ user.first_name|default:user.email }}!</p>
+<div class="max-w-6xl mx-auto">
+  <h1 class="text-3xl font-bold mb-2">Teacher Dashboard</h1>
+  <p class="text-lg text-muted-foreground mb-8">
+    Welcome back, {{ request.user.get_full_name|default:request.user.email }}
+  </p>
 
-  <div class="space-y-4">
-    <a href="{% url 'users:teacher_calendar' %}" class="inline-flex items-center justify-center gap-2 h-9 px-4 py-2 rounded-md bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors text-sm font-medium">
-      View Calendar
+  {# Dashboard Cards #}
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    {# Calendar Card #}
+    <a href="{% url 'users:teacher_calendar' %}" class="block group">
+      <c-card class="p-6 hover:shadow-lg transition-shadow duration-300">
+        <div class="flex flex-col items-center text-center">
+          {# Icon with circular background #}
+          <div class="flex items-center justify-center w-20 h-20 rounded-full bg-primary transition-all duration-200 transform group-hover:scale-110">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-primary-foreground">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+            </svg>
+          </div>
+          {# Title #}
+          <h2 class="text-xl font-semibold mt-4">Calendar</h2>
+          <p class="text-sm text-muted-foreground mt-2">
+            View and manage your schedule
+          </p>
+        </div>
+      </c-card>
     </a>
+
+    {# Availability Card #}
+    <a href="{% url 'availability:availability_list' %}" class="block group">
+      <c-card class="p-6 hover:shadow-lg transition-shadow duration-300">
+        <div class="flex flex-col items-center text-center">
+          {# Icon with circular background #}
+          <div class="flex items-center justify-center w-20 h-20 rounded-full bg-primary transition-all duration-200 transform group-hover:scale-110">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-primary-foreground">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+            </svg>
+          </div>
+          {# Title #}
+          <h2 class="text-xl font-semibold mt-4">Availability</h2>
+          <p class="text-sm text-muted-foreground mt-2">
+            Manage your time slots
+          </p>
+        </div>
+      </c-card>
+    </a>
+
+    {# Students Card #}
+    <a href="{% url 'users:student_list' %}" class="block group">
+      <c-card class="p-6 hover:shadow-lg transition-shadow duration-300">
+        <div class="flex flex-col items-center text-center">
+          {# Icon with circular background #}
+          <div class="flex items-center justify-center w-20 h-20 rounded-full bg-primary transition-all duration-200 transform group-hover:scale-110">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-primary-foreground">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+            </svg>
+          </div>
+          {# Title #}
+          <h2 class="text-xl font-semibold mt-4">Students</h2>
+          <p class="text-sm text-muted-foreground mt-2">
+            View all registered students
+          </p>
+        </div>
+      </c-card>
+    </a>
+
+    {# Bookings Card (Future) #}
+    <div class="block opacity-60 cursor-not-allowed">
+      <c-card class="p-6">
+        <div class="flex flex-col items-center text-center">
+          {# Icon with circular background #}
+          <div class="flex items-center justify-center w-20 h-20 rounded-full bg-muted">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-muted-foreground">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 2.994v2.25m10.5-2.25v2.25m-14.252 13.5V7.491a2.25 2.25 0 0 1 2.25-2.25h13.5a2.25 2.25 0 0 1 2.25 2.25v11.251m-18 0a2.25 2.25 0 0 0 2.25 2.25h13.5a2.25 2.25 0 0 0 2.25-2.25m-18 0v-7.5a2.25 2.25 0 0 1 2.25-2.25h13.5a2.25 2.25 0 0 1 2.25 2.25v7.5m-6.75-6h2.25m-9 2.25h4.5m.002-2.25h.005v.006H12v-.006Zm-.001 4.5h.006v.006h-.006v-.005Zm-2.25.001h.005v.006H9.75v-.006Zm-2.25 0h.005v.005h-.006v-.005Zm6.75-2.247h.005v.005h-.005v-.005Zm0 2.247h.006v.006h-.006v-.006Zm2.25-2.248h.006V15H16.5v-.005Z" />
+            </svg>
+          </div>
+          {# Title #}
+          <h2 class="text-xl font-semibold mt-4">Bookings</h2>
+          <p class="text-sm text-muted-foreground mt-2">
+            View upcoming meetings
+          </p>
+          <span class="text-xs text-muted-foreground mt-3 italic">Coming soon</span>
+        </div>
+      </c-card>
+    </div>
   </div>
 </div>
 {% endblock %}

@@ -249,9 +249,9 @@ def change_password(request):
 # --------------------------
 
 
-@role_required(["admin"])
+@role_required(["teacher", "admin"])
 def student_list(request):
-    """List all students for admin."""
+    """List all students for teachers and admins."""
     students = User.objects.filter(role=User.Roles.STUDENT).order_by(
         "last_name", "first_name", "email"
     )
