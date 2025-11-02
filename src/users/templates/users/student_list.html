@@ -1,0 +1,84 @@
+{% extends "core/base.html" %}
+
+{% block title %}All Students - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+  {# Header #}
+  <div class="mb-6 flex items-center justify-between">
+    <div>
+      <h1 class="text-3xl font-bold mb-2">All Students</h1>
+      <p class="text-muted-foreground">Total: {{ students|length }} student{{ students|length|pluralize }}</p>
+    </div>
+    <a
+      href="{% url 'users:admin_home' %}"
+      class="inline-flex items-center justify-center gap-2 h-9 px-4 py-2 rounded-md border border-input bg-background shadow-xs hover:bg-accent hover:text-accent-foreground transition-colors text-sm font-medium"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+      </svg>
+      Back to Dashboard
+    </a>
+  </div>
+
+  {# Students List #}
+  {% if students %}
+    <c-card>
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="border-b">
+            <tr class="text-left">
+              <th class="px-6 py-3 text-sm font-semibold">Name</th>
+              <th class="px-6 py-3 text-sm font-semibold">Email</th>
+              <th class="px-6 py-3 text-sm font-semibold">Joined</th>
+              <th class="px-6 py-3 text-sm font-semibold">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y">
+            {% for student in students %}
+            <tr class="hover:bg-accent/50 transition-colors">
+              <td class="px-6 py-4">
+                <div class="font-medium">
+                  {{ student.get_full_name|default:"—" }}
+                </div>
+              </td>
+              <td class="px-6 py-4 text-sm text-muted-foreground">
+                {{ student.email }}
+              </td>
+              <td class="px-6 py-4 text-sm text-muted-foreground">
+                {{ student.date_joined|date:"M j, Y" }}
+              </td>
+              <td class="px-6 py-4">
+                {% if student.is_active %}
+                  <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    Active
+                  </span>
+                {% else %}
+                  <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                    Inactive
+                  </span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </c-card>
+  {% else %}
+    {# Empty State #}
+    <c-card class="p-12">
+      <div class="text-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+        <h3 class="text-xl font-semibold mb-2">No Students Found</h3>
+        <p class="text-muted-foreground">There are no registered students yet.</p>
+      </div>
+    </c-card>
+  {% endif %}
+</div>
+{% endblock %}

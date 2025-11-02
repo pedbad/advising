@@ -232,3 +232,26 @@ def change_password(request):
         form = PasswordChangeForm(request.user)
 
     return render(request, "users/change_password.html", {"form": form})
+
+
+# --------------------------
+# Admin user lists
+# --------------------------
+
+
+@role_required(["admin"])
+def student_list(request):
+    """List all students for admin."""
+    students = User.objects.filter(role=User.Roles.STUDENT).order_by(
+        "last_name", "first_name", "email"
+    )
+    return render(request, "users/student_list.html", {"students": students})
+
+
+@role_required(["admin"])
+def teacher_list(request):
+    """List all teachers for admin."""
+    teachers = User.objects.filter(role=User.Roles.TEACHER).order_by(
+        "last_name", "first_name", "email"
+    )
+    return render(request, "users/teacher_list.html", {"teachers": teachers})

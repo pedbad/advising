@@ -16,6 +16,9 @@ urlpatterns = [
     path("teacher/calendar/", views.teacher_calendar, name="teacher_calendar"),
     path("admin-home/", views.admin_home, name="admin_home"),
     path("admin/calendar/", views.admin_calendar, name="admin_calendar"),
+    # admin lists
+    path("students/", views.student_list, name="student_list"),
+    path("teachers/", views.teacher_list, name="teacher_list"),
     # profile
     path("profile/", views.profile_view, name="profile"),
     path("profile/edit/", views.profile_edit, name="profile_edit"),
