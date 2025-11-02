@@ -48,20 +48,31 @@ def get_calendar_data(year: int, month: int, teacher=None) -> dict:
 
         availabilities = Availability.objects.filter(
             teacher=teacher, date__gte=first_day, date__lte=last_day
-        ).values("date", "meeting_type")
+        ).order_by("date", "start_time")
 
-        # Group by date and count meeting types
+        # Group by date with counts and slot details
         for avail in availabilities:
-            day_num = avail["date"].day
+            day_num = avail.date.day
             if day_num not in availability_by_date:
                 availability_by_date[day_num] = {
                     "total": 0,
                     "online": 0,
                     "in_person": 0,
                     "both": 0,
+                    "slots": [],
                 }
             availability_by_date[day_num]["total"] += 1
-            availability_by_date[day_num][avail["meeting_type"]] += 1
+            availability_by_date[day_num][avail.meeting_type] += 1
+            # Add slot details for tooltip
+            availability_by_date[day_num]["slots"].append(
+                {
+                    "start_time": avail.start_time.strftime("%I:%M %p"),
+                    "end_time": avail.end_time.strftime("%I:%M %p"),
+                    "meeting_type": avail.meeting_type,
+                    "meeting_type_display": avail.get_meeting_type_display(),
+                    "message": avail.message,
+                }
+            )
 
     # Build weeks with day information
     weeks = []

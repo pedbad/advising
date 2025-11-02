@@ -55,25 +55,93 @@
                   <c-badge class="absolute top-1 right-1 h-2 w-2 p-0 bg-blue-500"></c-badge>
                 {% endif %}
 
-                {# Availability indicators #}
+                {# Availability indicators with individual tooltips #}
                 {% if day_data.availability %}
                   <div class="flex gap-1.5 mt-1 flex-wrap justify-center">
+                    {# Online slots #}
                     {% if day_data.availability.online > 0 %}
-                      <div class="flex items-center gap-0.5">
-                        <div class="h-3 w-3 rounded-full bg-blue-500"></div>
-                        <span class="text-xs font-semibold text-blue-700">{{ day_data.availability.online }}</span>
+                      <div class="relative" x-data="{ show: false }">
+                        <div
+                          @mouseenter="show = true"
+                          @mouseleave="show = false"
+                          class="flex items-center justify-center h-5 w-5 rounded-full bg-blue-500 text-white text-xs font-bold cursor-pointer"
+                        >
+                          {{ day_data.availability.online }}
+                        </div>
+                        {# Tooltip for online slots #}
+                        <div
+                          x-show="show"
+                          x-transition
+                          class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 z-50 pointer-events-none whitespace-nowrap"
+                          style="display: none;"
+                        >
+                          <div class="bg-white border-2 border-blue-500 text-gray-900 text-sm rounded-md shadow-xl px-3 py-2">
+                            <div class="font-semibold text-blue-600 mb-1 text-xs">Online</div>
+                            {% for slot in day_data.availability.slots %}
+                              {% if slot.meeting_type == 'online' %}
+                                <div class="font-medium">{{ slot.start_time }} - {{ slot.end_time }}</div>
+                              {% endif %}
+                            {% endfor %}
+                          </div>
+                        </div>
                       </div>
                     {% endif %}
+
+                    {# In-person slots #}
                     {% if day_data.availability.in_person > 0 %}
-                      <div class="flex items-center gap-0.5">
-                        <div class="h-3 w-3 rounded-full bg-green-500"></div>
-                        <span class="text-xs font-semibold text-green-700">{{ day_data.availability.in_person }}</span>
+                      <div class="relative" x-data="{ show: false }">
+                        <div
+                          @mouseenter="show = true"
+                          @mouseleave="show = false"
+                          class="flex items-center justify-center h-5 w-5 rounded-full bg-green-500 text-white text-xs font-bold cursor-pointer"
+                        >
+                          {{ day_data.availability.in_person }}
+                        </div>
+                        {# Tooltip for in-person slots #}
+                        <div
+                          x-show="show"
+                          x-transition
+                          class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 z-50 pointer-events-none whitespace-nowrap"
+                          style="display: none;"
+                        >
+                          <div class="bg-white border-2 border-green-500 text-gray-900 text-sm rounded-md shadow-xl px-3 py-2">
+                            <div class="font-semibold text-green-600 mb-1 text-xs">In-person</div>
+                            {% for slot in day_data.availability.slots %}
+                              {% if slot.meeting_type == 'in_person' %}
+                                <div class="font-medium">{{ slot.start_time }} - {{ slot.end_time }}</div>
+                              {% endif %}
+                            {% endfor %}
+                          </div>
+                        </div>
                       </div>
                     {% endif %}
+
+                    {# Both slots #}
                     {% if day_data.availability.both > 0 %}
-                      <div class="flex items-center gap-0.5">
-                        <div class="h-3 w-3 rounded-full bg-purple-500"></div>
-                        <span class="text-xs font-semibold text-purple-700">{{ day_data.availability.both }}</span>
+                      <div class="relative" x-data="{ show: false }">
+                        <div
+                          @mouseenter="show = true"
+                          @mouseleave="show = false"
+                          class="flex items-center justify-center h-5 w-5 rounded-full bg-purple-500 text-white text-xs font-bold cursor-pointer"
+                        >
+                          {{ day_data.availability.both }}
+                        </div>
+                        {# Tooltip for both slots #}
+                        <div
+                          x-show="show"
+                          x-transition
+                          class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 z-50 pointer-events-none whitespace-nowrap"
+                          style="display: none;"
+                        >
+                          <div class="bg-white border-2 border-purple-500 text-gray-900 text-sm rounded-md shadow-xl px-3 py-2">
+                            <div class="font-semibold text-purple-600 mb-1 text-xs">Both</div>
+                            {% for slot in day_data.availability.slots %}
+                              {% if slot.meeting_type == 'both' %}
+                                <div class="font-medium">{{ slot.start_time }} - {{ slot.end_time }}</div>
+                              {% endif %}
+                            {% endfor %}
+                          </div>
+                        </div>
                       </div>
                     {% endif %}
                   </div>
