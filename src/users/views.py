@@ -92,19 +92,12 @@ class RegisterView(AdminRequiredMixin, CreateView):
         # require first-time set password
         user.set_unusable_password()
 
-        # flags first
-        if user.role in (User.Roles.TEACHER, User.Roles.ADMIN):
+        # Only admins get staff access to Django admin
+        if user.role == User.Roles.ADMIN:
             user.is_staff = True
 
         # ✅ save BEFORE touching many-to-many relations
         user.save()
-
-        # add group only after save
-        if user.role == User.Roles.TEACHER:
-            from django.contrib.auth.models import Group
-
-            teacher_group, _ = Group.objects.get_or_create(name="Teacher Admin")
-            user.groups.add(teacher_group)
 
         messages.success(
             self.request,
@@ -151,9 +144,33 @@ def student_home(request):
 
 @role_required(["teacher"])
 def teacher_home(request):
-    return render(request, "users/teacher_home.html")
+    """Teacher home page with calendar."""
+    from datetime import date
+
+    from availability.utils import get_calendar_data
+
+    today = date.today()
+    calendar_data = get_calendar_data(today.year, today.month)
+
+    context = {
+        "calendar": calendar_data,
+    }
+
+    return render(request, "users/teacher_home.html", context)
 
 
 @role_required(["admin"])
 def admin_home(request):
-    return render(request, "users/admin_home.html")
+    """Admin home page with calendar."""
+    from datetime import date
+
+    from availability.utils import get_calendar_data
+
+    today = date.today()
+    calendar_data = get_calendar_data(today.year, today.month)
+
+    context = {
+        "calendar": calendar_data,
+    }
+
+    return render(request, "users/admin_home.html", context)

@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     # Local apps
     "core.apps.CoreConfig",
     "users.apps.UsersConfig",
+    "availability.apps.AvailabilityConfig",
 ]
 
 if DEBUG:

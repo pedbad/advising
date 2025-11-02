@@ -1,7 +1,6 @@
 # src/users/signals.py
-from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group, Permission
+from django.contrib.auth.models import Group
 from django.db import transaction
 from django.db.models.signals import post_migrate, post_save
 from django.dispatch import receiver
@@ -44,26 +43,11 @@ def send_invite_on_create(sender, instance, created: bool, **kwargs):
 @receiver(post_migrate)
 def ensure_teacher_admin_group(sender, **kwargs):
     """
-    Ensure Teacher Admin exists, has the right perms, and all teacher users
-    are staff & in the group. Controlled by settings.TEACHER_ADMIN_FULL_PERMS.
+    Ensure Teacher Admin group exists for potential future use.
+    Teachers no longer get Django admin access (is_staff=False).
     """
-    full_perms = getattr(settings, "TEACHER_ADMIN_FULL_PERMS", True)
-
-    group, _ = Group.objects.get_or_create(name=TEACHER_GROUP_NAME)
-    perms_qs = (
-        Permission.objects.all()
-        if full_perms
-        else Permission.objects.filter(codename__startswith="view_")
-    )
-    group.permissions.set(perms_qs)
-    group.save()
-
-    # Sync existing teachers
-    for u in User.objects.filter(role="teacher"):
-        if not u.is_staff:
-            u.is_staff = True
-            u.save(update_fields=["is_staff"])
-        u.groups.add(group)
+    # Create the group but don't assign any special permissions or staff status
+    Group.objects.get_or_create(name=TEACHER_GROUP_NAME)
 
 
 # Connect after migrations (use a stable dispatch_uid to avoid double-wiring)
