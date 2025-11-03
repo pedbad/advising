@@ -53,19 +53,34 @@
       let debounceTimer;
 
       if (searchInput) {
+        // Auto-focus search input if there's a search query (after page reload)
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('q')) {
+          searchInput.focus();
+          // Move cursor to end of input
+          const length = searchInput.value.length;
+          searchInput.setSelectionRange(length, length);
+        }
+
         searchInput.addEventListener('input', function(e) {
+          const query = e.target.value.trim();
+
           // Clear existing timer
           clearTimeout(debounceTimer);
 
-          // Set new timer - submit form after 400ms of no typing
-          debounceTimer = setTimeout(function() {
-            searchForm.submit();
-          }, 400);
+          // Only search if there are at least 2 characters or field is empty (to clear search)
+          if (query.length >= 2 || query.length === 0) {
+            // Set new timer - submit form after 600ms of no typing
+            debounceTimer = setTimeout(function() {
+              searchForm.submit();
+            }, 600);
+          }
         });
 
         // Also submit on Enter key
         searchInput.addEventListener('keypress', function(e) {
           if (e.key === 'Enter') {
+            e.preventDefault();
             clearTimeout(debounceTimer);
             searchForm.submit();
           }
