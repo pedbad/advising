@@ -260,17 +260,114 @@ def change_password(request):
 
 @role_required(["teacher", "admin"])
 def student_list(request):
-    """List all students for teachers and admins."""
-    students = User.objects.filter(role=User.Roles.STUDENT).order_by(
-        "last_name", "first_name", "email"
+    """List all students for teachers and admins with search and sorting."""
+    students = (
+        User.objects.filter(role=User.Roles.STUDENT)
+        .select_related("student_profile")
+        .prefetch_related("student_profile__questionnaires")
     )
-    return render(request, "users/student_list.html", {"students": students})
+
+    # Search functionality
+    search_query = request.GET.get("q", "").strip()
+    if search_query:
+        from django.db.models import Q
+
+        students = students.filter(
+            Q(first_name__icontains=search_query)
+            | Q(last_name__icontains=search_query)
+            | Q(email__icontains=search_query)
+        )
+
+    # Sorting functionality
+    sort_by = request.GET.get("sort", "name")
+    direction = request.GET.get("direction", "asc")
+
+    # Define sort field mappings
+    sort_mappings = {
+        "name": ["last_name", "first_name"],
+        "email": ["email"],
+        "joined": ["date_joined"],
+    }
+
+    # Get the sort fields
+    sort_fields = sort_mappings.get(sort_by, ["last_name", "first_name"])
+
+    # Apply direction prefix
+    if direction == "desc":
+        sort_fields = [f"-{field}" for field in sort_fields]
+
+    students = list(students.order_by(*sort_fields))
+
+    # Special handling for questionnaire sorting
+    if sort_by == "questionnaire":
+        students.sort(
+            key=lambda s: (
+                not (
+                    hasattr(s, "student_profile")
+                    and s.student_profile
+                    and s.student_profile.has_completed_questionnaire()
+                ),
+                s.last_name or "",
+                s.first_name or "",
+            ),
+            reverse=(direction == "desc"),
+        )
+
+    return render(
+        request,
+        "users/student_list.html",
+        {
+            "students": students,
+            "search_query": search_query,
+            "current_sort": sort_by,
+            "current_direction": direction,
+        },
+    )
 
 
 @role_required(["admin"])
 def teacher_list(request):
-    """List all teachers for admin."""
-    teachers = User.objects.filter(role=User.Roles.TEACHER).order_by(
-        "last_name", "first_name", "email"
+    """List all teachers for admin with search and sorting."""
+    teachers = User.objects.filter(role=User.Roles.TEACHER)
+
+    # Search functionality
+    search_query = request.GET.get("q", "").strip()
+    if search_query:
+        from django.db.models import Q
+
+        teachers = teachers.filter(
+            Q(first_name__icontains=search_query)
+            | Q(last_name__icontains=search_query)
+            | Q(email__icontains=search_query)
+        )
+
+    # Sorting functionality
+    sort_by = request.GET.get("sort", "name")
+    direction = request.GET.get("direction", "asc")
+
+    # Define sort field mappings
+    sort_mappings = {
+        "name": ["last_name", "first_name"],
+        "email": ["email"],
+        "joined": ["date_joined"],
+    }
+
+    # Get the sort fields
+    sort_fields = sort_mappings.get(sort_by, ["last_name", "first_name"])
+
+    # Apply direction prefix
+    if direction == "desc":
+        sort_fields = [f"-{field}" for field in sort_fields]
+
+    teachers = teachers.order_by(*sort_fields)
+
+    return render(
+        request,
+        "users/teacher_list.html",
+        {
+            "teachers": teachers,
+            "search_query": search_query,
+            "current_sort": sort_by,
+            "current_direction": direction,
+        },
     )
-    return render(request, "users/teacher_list.html", {"teachers": teachers})
