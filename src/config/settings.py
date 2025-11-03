@@ -73,6 +73,8 @@ INSTALLED_APPS = [
     "core.apps.CoreConfig",
     "users.apps.UsersConfig",
     "availability.apps.AvailabilityConfig",
+    "profiles.apps.ProfilesConfig",
+    "questionnaire.apps.QuestionnaireConfig",
 ]
 
 if DEBUG:

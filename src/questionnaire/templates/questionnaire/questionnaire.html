@@ -1,0 +1,644 @@
+{% extends "core/base.html" %}
+
+{% block title %}Student Questionnaire - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+  {# Header #}
+  <div class="mb-6">
+    <h1 class="text-3xl font-bold mb-2">Student Questionnaire</h1>
+    {% if not has_completed_questionnaire %}
+      <p class="text-lg text-muted-foreground">
+        Welcome {{ request.user.get_full_name|default:request.user.email }}. Please complete this pre-appointment Questionnaire to help us understand your language learning goals and needs.
+      </p>
+    {% else %}
+      <p class="text-lg text-muted-foreground">
+        View or update your questionnaire responses.
+      </p>
+    {% endif %}
+  </div>
+
+  {% if is_editing %}
+    {# Edit Mode - Show Form #}
+    <form method="post" class="space-y-6">
+      {% csrf_token %}
+
+      {# Basic Information Section #}
+      <c-card class="p-6">
+        <h2 class="text-2xl font-semibold mb-4 pb-2 border-b">Basic Information</h2>
+
+        {# Faculty/Department #}
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-2" for="{{ form.faculty_department.id_for_label }}">
+            {{ form.faculty_department.label }}
+            <span class="text-red-500">*</span>
+          </label>
+          {{ form.faculty_department }}
+          {% if form.faculty_department.errors %}
+            <p class="text-red-500 text-sm mt-1">{{ form.faculty_department.errors.0 }}</p>
+          {% endif %}
+          <p class="text-sm text-muted-foreground mt-1">{{ form.faculty_department.help_text }}</p>
+        </div>
+
+        {# Mother Tongue #}
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-2" for="{{ form.mother_tongue.id_for_label }}">
+            {{ form.mother_tongue.label }}
+            <span class="text-red-500">*</span>
+          </label>
+          {{ form.mother_tongue }}
+          {% if form.mother_tongue.errors %}
+            <p class="text-red-500 text-sm mt-1">{{ form.mother_tongue.errors.0 }}</p>
+          {% endif %}
+          <p class="text-sm text-muted-foreground mt-1">{{ form.mother_tongue.help_text }}</p>
+        </div>
+
+        {# University Status #}
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-3">
+            {{ form.university_status.label }}
+            <span class="text-red-500">*</span>
+          </label>
+          <div class="space-y-2">
+            {% for radio in form.university_status %}
+              <div class="flex items-center">
+                {{ radio.tag }}
+                <label for="{{ radio.id_for_label }}" class="ml-2 text-sm">{{ radio.choice_label }}</label>
+              </div>
+            {% endfor %}
+          </div>
+          {% if form.university_status.errors %}
+            <p class="text-red-500 text-sm mt-1">{{ form.university_status.errors.0 }}</p>
+          {% endif %}
+        </div>
+      </c-card>
+
+      {# Mandatory Language Section #}
+      <c-card class="p-6">
+        <h2 class="text-2xl font-semibold mb-4 pb-2 border-b">Primary Language</h2>
+
+        {# Language Name #}
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-2" for="{{ form.language_mandatory_name.id_for_label }}">
+            {{ form.language_mandatory_name.label }}
+            <span class="text-red-500">*</span>
+          </label>
+          {{ form.language_mandatory_name }}
+          {% if form.language_mandatory_name.errors %}
+            <p class="text-red-500 text-sm mt-1">{{ form.language_mandatory_name.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        {# Proficiency Level #}
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-3">
+            {{ form.language_mandatory_proficiency.label }}
+            <span class="text-red-500">*</span>
+          </label>
+          <div class="flex gap-6">
+            {% for radio in form.language_mandatory_proficiency %}
+              <div class="flex items-center">
+                {{ radio.tag }}
+                <label for="{{ radio.id_for_label }}" class="ml-2 text-sm">{{ radio.choice_label }}</label>
+              </div>
+            {% endfor %}
+          </div>
+          {% if form.language_mandatory_proficiency.errors %}
+            <p class="text-red-500 text-sm mt-1">{{ form.language_mandatory_proficiency.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        {# Learning Goals #}
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-3">
+            {{ form.language_mandatory_goals.label }}
+            <span class="text-red-500">*</span>
+          </label>
+          <div class="space-y-2">
+            {% for checkbox in form.language_mandatory_goals %}
+              <div class="flex items-center">
+                {{ checkbox.tag }}
+                <label for="{{ checkbox.id_for_label }}" class="ml-2 text-sm">{{ checkbox.choice_label }}</label>
+              </div>
+            {% endfor %}
+          </div>
+          {% if form.language_mandatory_goals.errors %}
+            <p class="text-red-500 text-sm mt-1">{{ form.language_mandatory_goals.errors.0 }}</p>
+          {% endif %}
+          <p class="text-sm text-muted-foreground mt-1">{{ form.language_mandatory_goals.help_text }}</p>
+        </div>
+      </c-card>
+
+      {# Optional Language Section #}
+      <c-card class="p-6">
+        <h2 class="text-2xl font-semibold mb-4 pb-2 border-b">Additional Language to Learn or Improve (Optional)</h2>
+
+        {# Language Name #}
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-2" for="{{ form.language_optional_name.id_for_label }}">
+            {{ form.language_optional_name.label }}
+          </label>
+          {{ form.language_optional_name }}
+          {% if form.language_optional_name.errors %}
+            <p class="text-red-500 text-sm mt-1">{{ form.language_optional_name.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        {# Proficiency Level #}
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-3">
+            {{ form.language_optional_proficiency.label }}
+          </label>
+          <div class="flex gap-6">
+            {% for radio in form.language_optional_proficiency %}
+              <div class="flex items-center">
+                {{ radio.tag }}
+                <label for="{{ radio.id_for_label }}" class="ml-2 text-sm">{{ radio.choice_label }}</label>
+              </div>
+            {% endfor %}
+          </div>
+          {% if form.language_optional_proficiency.errors %}
+            <p class="text-red-500 text-sm mt-1">{{ form.language_optional_proficiency.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        {# Learning Goals #}
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-3">
+            {{ form.language_optional_goals.label }}
+          </label>
+          <div class="space-y-2">
+            {% for checkbox in form.language_optional_goals %}
+              <div class="flex items-center">
+                {{ checkbox.tag }}
+                <label for="{{ checkbox.id_for_label }}" class="ml-2 text-sm">{{ checkbox.choice_label }}</label>
+              </div>
+            {% endfor %}
+          </div>
+          {% if form.language_optional_goals.errors %}
+            <p class="text-red-500 text-sm mt-1">{{ form.language_optional_goals.errors.0 }}</p>
+          {% endif %}
+          <p class="text-sm text-muted-foreground mt-1">{{ form.language_optional_goals.help_text }}</p>
+        </div>
+      </c-card>
+
+      {# Learning Details Section #}
+      <c-card class="p-6">
+        <h2 class="text-2xl font-semibold mb-4 pb-2 border-b">Learning Details</h2>
+
+        {# Aspects to Improve #}
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-2" for="{{ form.aspects_to_improve.id_for_label }}">
+            {{ form.aspects_to_improve.label }}
+            <span class="text-red-500">*</span>
+          </label>
+          {{ form.aspects_to_improve }}
+          {% if form.aspects_to_improve.errors %}
+            <p class="text-red-500 text-sm mt-1">{{ form.aspects_to_improve.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        {# Activities You Can Manage #}
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-2" for="{{ form.activities_you_can_manage.id_for_label }}">
+            {{ form.activities_you_can_manage.label }}
+            <span class="text-red-500">*</span>
+          </label>
+          {{ form.activities_you_can_manage }}
+          {% if form.activities_you_can_manage.errors %}
+            <p class="text-red-500 text-sm mt-1">{{ form.activities_you_can_manage.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        {# Hours Per Week #}
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-2" for="{{ form.hours_per_week.id_for_label }}">
+            {{ form.hours_per_week.label }}
+            <span class="text-red-500">*</span>
+          </label>
+          {{ form.hours_per_week }}
+          {% if form.hours_per_week.errors %}
+            <p class="text-red-500 text-sm mt-1">{{ form.hours_per_week.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        {# Other Languages Studied #}
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-2" for="{{ form.other_languages_studied.id_for_label }}">
+            {{ form.other_languages_studied.label }}
+          </label>
+          {{ form.other_languages_studied }}
+          {% if form.other_languages_studied.errors %}
+            <p class="text-red-500 text-sm mt-1">{{ form.other_languages_studied.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        {# Additional Comments #}
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-2" for="{{ form.additional_comments.id_for_label }}">
+            {{ form.additional_comments.label }}
+          </label>
+          {{ form.additional_comments }}
+          {% if form.additional_comments.errors %}
+            <p class="text-red-500 text-sm mt-1">{{ form.additional_comments.errors.0 }}</p>
+          {% endif %}
+        </div>
+      </c-card>
+
+      {# Submit Button #}
+      <div class="flex justify-end gap-4">
+        {% if has_completed_questionnaire %}
+          <a href="?edit=false" class="inline-flex items-center justify-center px-6 py-3 rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors">
+            Cancel
+          </a>
+        {% endif %}
+        <button type="submit" class="inline-flex items-center justify-center px-6 py-3 rounded-md text-sm font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity">
+          Submit Questionnaire
+        </button>
+      </div>
+    </form>
+
+  {% else %}
+    {# View Mode - Show Completed Questionnaire #}
+    {% if latest_questionnaire %}
+      <c-card class="p-6 mb-6">
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <h2 class="text-2xl font-semibold">Your Questionnaire</h2>
+            <p class="text-sm text-muted-foreground">Submitted on {{ latest_questionnaire.created_at|date:"F j, Y" }}</p>
+          </div>
+          <a href="?edit=true" class="inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity">
+            Edit Questionnaire
+          </a>
+        </div>
+
+        {# Display questionnaire data in read-only format #}
+        <div class="space-y-6 mt-6">
+          <div>
+            <h3 class="font-semibold text-lg mb-2">Basic Information</h3>
+            <dl class="grid grid-cols-1 gap-4">
+              <div>
+                <dt class="text-sm font-medium text-muted-foreground">Faculty / Department</dt>
+                <dd class="mt-1">{{ latest_questionnaire.faculty_department }}</dd>
+              </div>
+              <div>
+                <dt class="text-sm font-medium text-muted-foreground">Mother Tongue</dt>
+                <dd class="mt-1">{{ latest_questionnaire.mother_tongue }}</dd>
+              </div>
+              <div>
+                <dt class="text-sm font-medium text-muted-foreground">University Status</dt>
+                <dd class="mt-1">{{ latest_questionnaire.get_university_status_display }}</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div class="border-t pt-6">
+            <h3 class="font-semibold text-lg mb-2">Primary Language</h3>
+            <dl class="grid grid-cols-1 gap-4">
+              <div>
+                <dt class="text-sm font-medium text-muted-foreground">Language</dt>
+                <dd class="mt-1">{{ latest_questionnaire.language_mandatory_name }}</dd>
+              </div>
+              <div>
+                <dt class="text-sm font-medium text-muted-foreground">Proficiency Level</dt>
+                <dd class="mt-1">{{ latest_questionnaire.get_language_mandatory_proficiency_display }}</dd>
+              </div>
+              <div>
+                <dt class="text-sm font-medium text-muted-foreground">Learning Goals</dt>
+                <dd class="mt-1">{{ latest_questionnaire.language_mandatory_goals|join:", " }}</dd>
+              </div>
+            </dl>
+          </div>
+
+          {% if latest_questionnaire.language_optional_name %}
+            <div class="border-t pt-6">
+              <h3 class="font-semibold text-lg mb-2">Additional Language</h3>
+              <dl class="grid grid-cols-1 gap-4">
+                <div>
+                  <dt class="text-sm font-medium text-muted-foreground">Language</dt>
+                  <dd class="mt-1">{{ latest_questionnaire.language_optional_name }}</dd>
+                </div>
+                <div>
+                  <dt class="text-sm font-medium text-muted-foreground">Proficiency Level</dt>
+                  <dd class="mt-1">{{ latest_questionnaire.get_language_optional_proficiency_display }}</dd>
+                </div>
+                <div>
+                  <dt class="text-sm font-medium text-muted-foreground">Learning Goals</dt>
+                  <dd class="mt-1">{{ latest_questionnaire.language_optional_goals|join:", " }}</dd>
+                </div>
+              </dl>
+            </div>
+          {% endif %}
+
+          <div class="border-t pt-6">
+            <h3 class="font-semibold text-lg mb-2">Learning Details</h3>
+            <dl class="grid grid-cols-1 gap-4">
+              <div>
+                <dt class="text-sm font-medium text-muted-foreground">Aspects to Improve</dt>
+                <dd class="mt-1 whitespace-pre-wrap">{{ latest_questionnaire.aspects_to_improve }}</dd>
+              </div>
+              <div>
+                <dt class="text-sm font-medium text-muted-foreground">Activities You Can Manage</dt>
+                <dd class="mt-1 whitespace-pre-wrap">{{ latest_questionnaire.activities_you_can_manage }}</dd>
+              </div>
+              <div>
+                <dt class="text-sm font-medium text-muted-foreground">Hours Per Week</dt>
+                <dd class="mt-1">{{ latest_questionnaire.hours_per_week }}</dd>
+              </div>
+              {% if latest_questionnaire.other_languages_studied %}
+                <div>
+                  <dt class="text-sm font-medium text-muted-foreground">Other Languages Studied</dt>
+                  <dd class="mt-1 whitespace-pre-wrap">{{ latest_questionnaire.other_languages_studied }}</dd>
+                </div>
+              {% endif %}
+              {% if latest_questionnaire.additional_comments %}
+                <div>
+                  <dt class="text-sm font-medium text-muted-foreground">Additional Comments</dt>
+                  <dd class="mt-1 whitespace-pre-wrap">{{ latest_questionnaire.additional_comments }}</dd>
+                </div>
+              {% endif %}
+            </dl>
+          </div>
+        </div>
+      </c-card>
+
+      {# Previous Submissions Section #}
+      {% if questionnaires.count > 1 %}
+        <div class="mt-8">
+          <h2 class="text-2xl font-semibold mb-4">Previous Submissions</h2>
+          <div class="space-y-4">
+            {% for q in questionnaires %}
+              {% if q.id != latest_questionnaire.id %}
+                <details class="group">
+                  <summary class="cursor-pointer list-none">
+                    <c-card class="p-4 hover:bg-accent/50 transition-colors">
+                      <div class="flex justify-between items-center">
+                        <div>
+                          <p class="font-medium">Submitted on {{ q.created_at|date:"F j, Y" }} at {{ q.created_at|date:"g:i A" }}</p>
+                          <p class="text-sm text-muted-foreground">Click to view details</p>
+                        </div>
+                        <svg class="w-5 h-5 text-muted-foreground transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                      </div>
+                    </c-card>
+                  </summary>
+
+                  <c-card class="p-6 mt-2 border-l-4 border-l-primary/30">
+                    <div class="space-y-6">
+                      <div>
+                        <h3 class="font-semibold text-lg mb-2">Basic Information</h3>
+                        <dl class="grid grid-cols-1 gap-4">
+                          <div>
+                            <dt class="text-sm font-medium text-muted-foreground">Faculty / Department</dt>
+                            <dd class="mt-1">{{ q.faculty_department }}</dd>
+                          </div>
+                          <div>
+                            <dt class="text-sm font-medium text-muted-foreground">Mother Tongue</dt>
+                            <dd class="mt-1">{{ q.mother_tongue }}</dd>
+                          </div>
+                          <div>
+                            <dt class="text-sm font-medium text-muted-foreground">University Status</dt>
+                            <dd class="mt-1">{{ q.get_university_status_display }}</dd>
+                          </div>
+                        </dl>
+                      </div>
+
+                      <div class="border-t pt-6">
+                        <h3 class="font-semibold text-lg mb-2">Primary Language</h3>
+                        <dl class="grid grid-cols-1 gap-4">
+                          <div>
+                            <dt class="text-sm font-medium text-muted-foreground">Language</dt>
+                            <dd class="mt-1">{{ q.language_mandatory_name }}</dd>
+                          </div>
+                          <div>
+                            <dt class="text-sm font-medium text-muted-foreground">Proficiency Level</dt>
+                            <dd class="mt-1">{{ q.get_language_mandatory_proficiency_display }}</dd>
+                          </div>
+                          <div>
+                            <dt class="text-sm font-medium text-muted-foreground">Learning Goals</dt>
+                            <dd class="mt-1">{{ q.language_mandatory_goals|join:", " }}</dd>
+                          </div>
+                        </dl>
+                      </div>
+
+                      {% if q.language_optional_name %}
+                        <div class="border-t pt-6">
+                          <h3 class="font-semibold text-lg mb-2">Additional Language</h3>
+                          <dl class="grid grid-cols-1 gap-4">
+                            <div>
+                              <dt class="text-sm font-medium text-muted-foreground">Language</dt>
+                              <dd class="mt-1">{{ q.language_optional_name }}</dd>
+                            </div>
+                            <div>
+                              <dt class="text-sm font-medium text-muted-foreground">Proficiency Level</dt>
+                              <dd class="mt-1">{{ q.get_language_optional_proficiency_display }}</dd>
+                            </div>
+                            <div>
+                              <dt class="text-sm font-medium text-muted-foreground">Learning Goals</dt>
+                              <dd class="mt-1">{{ q.language_optional_goals|join:", " }}</dd>
+                            </div>
+                          </dl>
+                        </div>
+                      {% endif %}
+
+                      <div class="border-t pt-6">
+                        <h3 class="font-semibold text-lg mb-2">Learning Details</h3>
+                        <dl class="grid grid-cols-1 gap-4">
+                          <div>
+                            <dt class="text-sm font-medium text-muted-foreground">Aspects to Improve</dt>
+                            <dd class="mt-1 whitespace-pre-wrap">{{ q.aspects_to_improve }}</dd>
+                          </div>
+                          <div>
+                            <dt class="text-sm font-medium text-muted-foreground">Activities You Can Manage</dt>
+                            <dd class="mt-1 whitespace-pre-wrap">{{ q.activities_you_can_manage }}</dd>
+                          </div>
+                          <div>
+                            <dt class="text-sm font-medium text-muted-foreground">Hours Per Week</dt>
+                            <dd class="mt-1">{{ q.hours_per_week }}</dd>
+                          </div>
+                          {% if q.other_languages_studied %}
+                            <div>
+                              <dt class="text-sm font-medium text-muted-foreground">Other Languages Studied</dt>
+                              <dd class="mt-1 whitespace-pre-wrap">{{ q.other_languages_studied }}</dd>
+                            </div>
+                          {% endif %}
+                          {% if q.additional_comments %}
+                            <div>
+                              <dt class="text-sm font-medium text-muted-foreground">Additional Comments</dt>
+                              <dd class="mt-1 whitespace-pre-wrap">{{ q.additional_comments }}</dd>
+                            </div>
+                          {% endif %}
+                        </dl>
+                      </div>
+                    </div>
+                  </c-card>
+                </details>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+    {% else %}
+      <c-card class="p-12">
+        <div class="text-center">
+          <p class="text-lg text-muted-foreground mb-4">No questionnaire found.</p>
+          <a href="?edit=true" class="inline-flex items-center justify-center px-6 py-3 rounded-md text-sm font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity">
+            Complete Questionnaire
+          </a>
+        </div>
+      </c-card>
+    {% endif %}
+  {% endif %}
+</div>
+
+<style>
+  /* Form field styling */
+  input[type="text"],
+  textarea,
+  select {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    background-color: transparent;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+  }
+
+  /* Dark mode borders */
+  @media (prefers-color-scheme: dark) {
+    input[type="text"],
+    textarea,
+    select {
+      border-color: #52525b;
+    }
+  }
+
+  input[type="text"]:hover,
+  textarea:hover,
+  select:hover {
+    border-color: #9ca3af;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    input[type="text"]:hover,
+    textarea:hover,
+    select:hover {
+      border-color: #71717a;
+    }
+  }
+
+  input[type="text"]:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  }
+
+  /* Radio button styling - outline based */
+  input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 1.125rem;
+    height: 1.125rem;
+    border: 2px solid #94a3b8;
+    border-radius: 50%;
+    background-color: transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    flex-shrink: 0;
+    margin: 0;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    input[type="radio"] {
+      border-color: #64748b;
+    }
+  }
+
+  input[type="radio"]:hover {
+    border-color: #3b82f6;
+  }
+
+  input[type="radio"]:checked {
+    border-color: #3b82f6;
+    border-width: 2px;
+  }
+
+  input[type="radio"]:checked::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background-color: #3b82f6;
+  }
+
+  input[type="radio"]:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  }
+
+  /* Checkbox styling - outline based */
+  input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 1.125rem;
+    height: 1.125rem;
+    border: 2px solid #94a3b8;
+    border-radius: 0.25rem;
+    background-color: transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    flex-shrink: 0;
+    margin: 0;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    input[type="checkbox"] {
+      border-color: #64748b;
+    }
+  }
+
+  input[type="checkbox"]:hover {
+    border-color: #3b82f6;
+  }
+
+  input[type="checkbox"]:checked {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+  }
+
+  input[type="checkbox"]:checked::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(45deg);
+    width: 0.35rem;
+    height: 0.65rem;
+    border: solid white;
+    border-width: 0 2.5px 2.5px 0;
+  }
+
+  input[type="checkbox"]:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  }
+
+  /* Enhanced label styling for better click targets */
+  input[type="radio"] + label,
+  input[type="checkbox"] + label {
+    cursor: pointer;
+    user-select: none;
+  }
+</style>
+{% endblock %}

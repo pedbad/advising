@@ -68,7 +68,16 @@ class EmailLoginView(LoginView):
     template_name = "users/registration/login.html"
 
     def get_success_url(self):
-        return _redirect_for_role(self.request.user)
+        user = self.request.user
+
+        # Check if user is a student and has not completed questionnaire
+        if user.role == "student":
+            # Check if student profile exists and questionnaire is incomplete
+            if hasattr(user, "student_profile"):
+                if not user.student_profile.has_completed_questionnaire():
+                    return reverse("questionnaire:questionnaire")
+
+        return _redirect_for_role(user)
 
 
 class EmailLogoutView(LogoutView):

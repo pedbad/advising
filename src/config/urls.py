@@ -8,6 +8,8 @@ urlpatterns = [
     path("", include("core.urls", namespace="core")),
     path("users/", include("users.urls", namespace="users")),
     path("availability/", include("availability.urls", namespace="availability")),
+    path("profiles/", include("profiles.urls", namespace="profiles")),
+    path("questionnaire/", include("questionnaire.urls", namespace="questionnaire")),
 ]
 
 if settings.DEBUG:
