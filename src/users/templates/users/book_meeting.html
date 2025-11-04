@@ -1,0 +1,75 @@
+{% extends "core/base.html" %}
+
+{% block title %}Book a Meeting - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+  {# Header #}
+  <div class="mb-6 flex items-center justify-between">
+    <div>
+      <h1 class="text-3xl font-bold mb-2">Book a Meeting</h1>
+      <p class="text-lg text-muted-foreground">
+        View available teacher slots and schedule your appointment
+      </p>
+    </div>
+    <a
+      href="{% url 'users:student_home' %}"
+      class="inline-flex items-center justify-center gap-2 h-9 px-4 py-2 rounded-md border border-input bg-background shadow-xs hover:bg-accent hover:text-accent-foreground transition-colors text-sm font-medium"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+      </svg>
+      Back to Dashboard
+    </a>
+  </div>
+
+  {% if not has_completed_questionnaire %}
+    {# Empty State - Questionnaire Required #}
+    <c-card class="p-12">
+      <div class="text-center max-w-md mx-auto">
+        {# Sad Face Icon #}
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-6 text-muted-foreground opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.182 16.318A4.486 4.486 0 0 0 12.016 15a4.486 4.486 0 0 0-3.198 1.318M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Z" />
+        </svg>
+
+        <h2 class="text-2xl font-semibold mb-3">Pre-Appointment Questionnaire Required</h2>
+        <p class="text-muted-foreground mb-6">
+          Before you can view available meeting slots and book an appointment, you must first complete the pre-appointment questionnaire. This helps us understand your language learning goals and needs.
+        </p>
+
+        {# Action Buttons #}
+        <div class="flex flex-col sm:flex-row gap-3 justify-center">
+          <a
+            href="{% url 'questionnaire:questionnaire' %}"
+            class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-md text-sm font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd" />
+            </svg>
+            Complete Questionnaire
+          </a>
+          <a
+            href="{% url 'users:student_home' %}"
+            class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+            </svg>
+            Back to Dashboard
+          </a>
+        </div>
+      </div>
+    </c-card>
+  {% else %}
+    {# Booking Interface - Coming Soon #}
+    <c-card class="p-12">
+      <div class="text-center">
+        <h2 class="text-2xl font-semibold mb-3">Available Slots</h2>
+        <p class="text-muted-foreground">
+          Booking interface coming soon...
+        </p>
+      </div>
+    </c-card>
+  {% endif %}
+</div>
+{% endblock %}

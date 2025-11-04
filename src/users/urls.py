@@ -12,6 +12,7 @@ urlpatterns = [
     path("register/", views.RegisterView.as_view(), name="register"),
     # dashboards / placeholders (so redirects resolve without other apps)
     path("student/", views.student_home, name="student_home"),
+    path("student/book-meeting/", views.book_meeting, name="book_meeting"),
     path("teacher/", views.teacher_home, name="teacher_home"),
     path("teacher/calendar/", views.teacher_calendar, name="teacher_calendar"),
     path("admin-home/", views.admin_home, name="admin_home"),

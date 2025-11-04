@@ -153,6 +153,19 @@ def student_home(request):
     return render(request, "users/student_home.html")
 
 
+@role_required(["student"])
+def book_meeting(request):
+    """Book a meeting page for students."""
+    # Check if student has completed questionnaire
+    has_completed = request.user.student_profile.has_completed_questionnaire()
+
+    return render(
+        request,
+        "users/book_meeting.html",
+        {"has_completed_questionnaire": has_completed},
+    )
+
+
 @role_required(["teacher"])
 def teacher_home(request):
     """Teacher home page placeholder."""
