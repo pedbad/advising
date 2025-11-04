@@ -155,15 +155,112 @@ def student_home(request):
 
 @role_required(["student"])
 def book_meeting(request):
-    """Book a meeting page for students."""
+    """
+    Book a meeting page for students.
+
+    Shows available slots and allows booking.
+    Requires questionnaire completion to view/book slots.
+    """
+    from collections import OrderedDict
+    from datetime import date, timedelta
+
+    from availability.models import Availability, Booking
+
     # Check if student has completed questionnaire
     has_completed = request.user.student_profile.has_completed_questionnaire()
 
-    return render(
-        request,
-        "users/book_meeting.html",
-        {"has_completed_questionnaire": has_completed},
+    if not has_completed:
+        return render(
+            request,
+            "users/book_meeting.html",
+            {"has_completed_questionnaire": False},
+        )
+
+    # Handle booking POST request
+    if request.method == "POST":
+        availability_id = request.POST.get("availability_id")
+        message = request.POST.get("message", "").strip()
+
+        if availability_id:
+            from django.db import transaction
+            from django.http import JsonResponse
+
+            try:
+                with transaction.atomic():
+                    # Lock the availability row to prevent race conditions
+                    availability = (
+                        Availability.objects.select_for_update()
+                        .select_related("teacher")
+                        .get(id=availability_id)
+                    )
+
+                    # Check if already booked
+                    if hasattr(availability, "booking"):
+                        return JsonResponse(
+                            {"success": False, "error": "This slot has already been booked."},
+                            status=400,
+                        )
+
+                    # Create the booking
+                    booking = Booking.objects.create(
+                        availability=availability, student=request.user, message=message
+                    )
+
+                    return JsonResponse(
+                        {
+                            "success": True,
+                            "message": "Booking confirmed successfully!",
+                            "booking_id": booking.id,
+                        }
+                    )
+
+            except Availability.DoesNotExist:
+                return JsonResponse(
+                    {"success": False, "error": "Availability slot not found."}, status=404
+                )
+            except Exception as e:
+                return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+    # GET request - show available slots
+    today = date.today()
+    tomorrow = today + timedelta(days=1)
+
+    # Fetch all upcoming availability slots that are NOT booked
+    availabilities = (
+        Availability.objects.filter(date__gte=today)
+        .filter(booking__isnull=True)  # Only show unbooked slots
+        .select_related("teacher")
+        .order_by("date", "start_time", "teacher__last_name", "teacher__first_name")
     )
+
+    # Group by teacher
+    by_teacher = OrderedDict()
+    for avail in availabilities:
+        teacher_key = avail.teacher.id
+        if teacher_key not in by_teacher:
+            by_teacher[teacher_key] = {
+                "teacher": avail.teacher,
+                "slots": [],
+            }
+        by_teacher[teacher_key]["slots"].append(avail)
+
+    # Group by date
+    by_date = OrderedDict()
+    for avail in availabilities:
+        if avail.date not in by_date:
+            by_date[avail.date] = []
+        by_date[avail.date].append(avail)
+
+    context = {
+        "has_completed_questionnaire": True,
+        "availabilities_by_teacher": list(by_teacher.values()),
+        "availabilities_by_date": by_date,
+        "has_slots": len(availabilities) > 0,
+        "today": today,
+        "tomorrow": tomorrow,
+    }
+
+    return render(request, "users/book_meeting.html", context)
 
 
 @role_required(["teacher"])
