@@ -1,14 +1,14 @@
 {% extends "core/base.html" %}
 
-{% block title %}All Teachers - {{ SITE_NAME }}{% endblock %}
+{% block title %}All Advisors - {{ SITE_NAME }}{% endblock %}
 
 {% block content %}
 <div class="max-w-6xl mx-auto">
   {# Header #}
   <div class="mb-6 flex items-center justify-between">
     <div>
-      <h1 class="text-3xl font-bold mb-2">All Teachers</h1>
-      <p class="text-muted-foreground">Total: {{ teachers|length }} teacher{{ teachers|length|pluralize }}</p>
+      <h1 class="text-3xl font-bold mb-2">All Advisors</h1>
+      <p class="text-muted-foreground">Total: {{ teachers|length }} advisor{{ teachers|length|pluralize }}</p>
     </div>
     <a
       href="{% url 'users:admin_home' %}"
@@ -89,7 +89,7 @@
     })();
   </script>
 
-  {# Teachers List #}
+  {# Advisors List #}
   {% if teachers %}
     <c-card>
       <div class="overflow-x-auto">
@@ -212,8 +212,8 @@
         <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
         </svg>
-        <h3 class="text-xl font-semibold mb-2">No Teachers Found</h3>
-        <p class="text-muted-foreground">There are no registered teachers yet.</p>
+        <h3 class="text-xl font-semibold mb-2">No Advisors Found</h3>
+        <p class="text-muted-foreground">There are no registered advisors yet.</p>
       </div>
     </c-card>
   {% endif %}

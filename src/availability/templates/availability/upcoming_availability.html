@@ -76,12 +76,12 @@
                 >
                   Sort by Date/Time
                 </button>
-                <button
-                  @click="groupBy = 'teacher'"
-                  :class="groupBy === 'teacher' ? 'bg-primary text-primary-foreground' : 'bg-background border border-input hover:bg-accent'"
-                  class="px-4 py-2 rounded-md text-sm font-medium transition-colors"
-                >
-                  Group by Teacher
+                  <button
+                    @click="groupBy = 'teacher'"
+                    :class="groupBy === 'teacher' ? 'bg-primary text-primary-foreground' : 'bg-background border border-input hover:bg-accent'"
+                    class="px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                  >
+                    Group by Advisor
                 </button>
               </div>
             </div>
@@ -187,7 +187,7 @@
                         {% endif %}
                       </div>
 
-                      {# Teacher Info #}
+                    {# Advisor Info #}
                       <div class="flex-1">
                         <div class="font-medium">{{ slot.teacher.get_full_name|default:slot.teacher.email }}</div>
                         <div class="text-sm text-muted-foreground">{{ slot.teacher.email }}</div>
@@ -242,7 +242,7 @@
         {% endfor %}
       </div>
 
-      {# Grouped by Teacher View #}
+      {# Grouped by Advisor View #}
       <div x-show="groupBy === 'teacher'" x-transition style="display: none;" x-ref="teacherViewContainer">
         {% for teacher_data in availabilities_by_teacher %}
           <c-card

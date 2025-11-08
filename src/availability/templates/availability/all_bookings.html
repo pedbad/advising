@@ -9,9 +9,9 @@
       <h1 class="text-3xl font-bold mb-2">All Bookings</h1>
       <p class="text-muted-foreground">
         {% if show_past %}
-          Review historic meetings between students and teachers.
+          Review historic meetings between students and advisors.
         {% else %}
-          Review every upcoming meeting across students and teachers.
+          Review every upcoming meeting across students and advisors.
         {% endif %}
       </p>
     </div>
@@ -92,7 +92,7 @@
                 :class="groupBy === 'teacher' ? 'bg-primary text-primary-foreground' : 'bg-background border border-input hover:bg-accent'"
                 class="px-4 py-2 rounded-md text-sm font-medium transition-colors"
               >
-                Group by Teacher
+                Group by Advisor
               </button>
             </div>
           </div>
@@ -189,7 +189,7 @@
                 <p class="text-xs text-muted-foreground">{{ booking.student.email }}</p>
               </div>
               <div>
-                <p class="text-sm uppercase text-muted-foreground">Teacher</p>
+                <p class="text-sm uppercase text-muted-foreground">Advisor</p>
                 <p class="font-medium">{{ booking.availability.teacher.get_full_name|default:booking.availability.teacher.email }}</p>
                 <p class="text-xs text-muted-foreground">{{ booking.availability.teacher.email }}</p>
               </div>
@@ -216,7 +216,7 @@
 
             {% if booking.availability.message %}
             <div class="mt-3 w-full px-3 py-2 text-sm rounded-md border border-slate-200 bg-slate-50 dark:bg-slate-900/40 dark:border-slate-700">
-              <span class="font-semibold">Teacher note:</span>
+              <span class="font-semibold">Advisor note:</span>
               {{ booking.availability.message }}
             </div>
             {% endif %}
@@ -300,7 +300,7 @@
 
             {% if booking.availability.message %}
             <div class="mt-3 w-full px-3 py-2 text-sm rounded-md border border-slate-200 bg-slate-50 dark:bg-slate-900/40 dark:border-slate-700">
-              <span class="font-semibold">Teacher note:</span>
+              <span class="font-semibold">Advisor note:</span>
               {{ booking.availability.message }}
             </div>
             {% endif %}

@@ -9,7 +9,7 @@
     <div>
       <h1 class="text-3xl font-bold mb-2">Book a Meeting</h1>
       <p class="text-lg text-muted-foreground">
-        View available teacher slots and schedule your appointment
+        View available advisor slots and schedule your appointment
       </p>
     </div>
     <a
@@ -196,7 +196,7 @@
                     :class="groupBy === 'teacher' ? 'bg-primary text-primary-foreground' : 'bg-background border border-input hover:bg-accent'"
                     class="px-4 py-2 rounded-md text-sm font-medium transition-colors"
                   >
-                    Group by Teacher
+                    Group by Advisor
                   </button>
                 </div>
               </div>
@@ -291,7 +291,7 @@
                         <div class="font-medium text-foreground">{{ slot.start_time|time:"g:i A" }} - {{ slot.end_time|time:"g:i A" }}</div>
                       </div>
 
-                      {# Teacher Info or Booked Message #}
+                {# Advisor Info or Booked Message #}
                       <div class="flex-1">
                         {% if slot.is_my_booking %}
                           <div class="font-medium {% if slot.meeting_type == 'online' %}text-blue-900 dark:text-blue-100{% elif slot.meeting_type == 'in_person' %}text-green-900 dark:text-green-100{% else %}text-purple-900 dark:text-purple-100{% endif %}">
@@ -300,7 +300,7 @@
                           {# Show message if present for booked slot #}
                           {% if slot.message %}
                             <div class="mt-2 px-3 py-1.5 text-xs rounded-md bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 text-amber-900 dark:text-amber-100">
-                              <span class="font-medium">Note from teacher:</span> {{ slot.message }}
+                              <span class="font-medium">Note from advisor:</span> {{ slot.message }}
                             </div>
                           {% endif %}
                           {# Show student's message if present #}
@@ -380,7 +380,7 @@
           {% endfor %}
         </div>
 
-        {# Grouped by Teacher View #}
+        {# Grouped by Advisor View #}
         <div x-show="groupBy === 'teacher'" x-transition style="display: none;">
           {% for teacher_data in availabilities_by_teacher %}
             <c-card
@@ -432,7 +432,7 @@
                           {# Show message if present for booked slot #}
                           {% if slot.message %}
                             <div class="mt-2 px-3 py-1.5 text-xs rounded-md bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 text-amber-900 dark:text-amber-100">
-                              <span class="font-medium">Note from teacher:</span> {{ slot.message }}
+                              <span class="font-medium">Note from advisor:</span> {{ slot.message }}
                             </div>
                           {% endif %}
                           {# Show student's message if present #}
@@ -585,7 +585,7 @@
                       <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
                     </svg>
                     <div>
-                      <span class="text-sm text-muted-foreground">Teacher:</span>
+                      <span class="text-sm text-muted-foreground">Advisor:</span>
                       <span class="font-medium ml-2" x-text="selectedSlot?.teacher"></span>
                     </div>
                   </div>

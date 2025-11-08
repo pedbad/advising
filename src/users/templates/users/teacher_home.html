@@ -1,10 +1,10 @@
 {% extends "core/base.html" %}
 
-{% block title %}Teacher Dashboard - {{ SITE_NAME }}{% endblock %}
+{% block title %}Advisor Dashboard - {{ SITE_NAME }}{% endblock %}
 
 {% block content %}
 <div class="max-w-6xl mx-auto">
-  <h1 class="text-3xl font-bold mb-2">Teacher Dashboard</h1>
+  <h1 class="text-3xl font-bold mb-2">Advisor Dashboard</h1>
   <p class="text-lg text-muted-foreground mb-8">
     Welcome back, {{ request.user.get_full_name|default:request.user.email }}
   </p>
