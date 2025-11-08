@@ -68,25 +68,22 @@
       </c-card>
     </a>
 
-    {# Bookings Card (Future) #}
-    <div class="block opacity-60 cursor-not-allowed">
-      <c-card class="p-6">
+    {# Bookings Card #}
+    <a href="{% url 'users:teacher_bookings' %}" class="block group">
+      <c-card class="p-6 hover:shadow-lg transition-shadow duration-300">
         <div class="flex flex-col items-center text-center">
-          {# Icon with circular background #}
-          <div class="flex items-center justify-center w-20 h-20 rounded-full bg-muted">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-muted-foreground">
+          <div class="flex items-center justify-center w-20 h-20 rounded-full bg-primary transition-all duration-200 transform group-hover:scale-110">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-primary-foreground">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 2.994v2.25m10.5-2.25v2.25m-14.252 13.5V7.491a2.25 2.25 0 0 1 2.25-2.25h13.5a2.25 2.25 0 0 1 2.25 2.25v11.251m-18 0a2.25 2.25 0 0 0 2.25 2.25h13.5a2.25 2.25 0 0 0 2.25-2.25m-18 0v-7.5a2.25 2.25 0 0 1 2.25-2.25h13.5a2.25 2.25 0 0 1 2.25 2.25v7.5m-6.75-6h2.25m-9 2.25h4.5m.002-2.25h.005v.006H12v-.006Zm-.001 4.5h.006v.006h-.006v-.005Zm-2.25.001h.005v.006H9.75v-.006Zm-2.25 0h.005v.005h-.006v-.005Zm6.75-2.247h.005v.005h-.005v-.005Zm0 2.247h.006v.006h-.006v-.006Zm2.25-2.248h.006V15H16.5v-.005Z" />
             </svg>
           </div>
-          {# Title #}
           <h2 class="text-xl font-semibold mt-4">Bookings</h2>
           <p class="text-sm text-muted-foreground mt-2">
-            View upcoming meetings
+            Review your meetings with students
           </p>
-          <span class="text-xs text-muted-foreground mt-3 italic">Coming soon</span>
         </div>
       </c-card>
-    </div>
+    </a>
   </div>
 </div>
 {% endblock %}

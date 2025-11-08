@@ -20,6 +20,8 @@ from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView
 
+from booking.models import Booking
+
 # Local imports
 from .constants import PWD_RESET_TPLS  # ← centralised template names
 from .decorators import role_required
@@ -157,6 +159,52 @@ def student_home(request):
 def teacher_home(request):
     """Teacher home page placeholder."""
     return render(request, "users/teacher_home.html")
+
+
+@role_required(["teacher"])
+def teacher_bookings(request):
+    """List advisor's bookings with upcoming/past toggle and date filter."""
+    from datetime import date, datetime
+
+    today = date.today()
+    show_past = request.GET.get("show") == "past"
+    selected_date_str = request.GET.get("date", "").strip()
+
+    base_qs = Booking.objects.select_related(
+        "availability", "availability__teacher", "student"
+    ).filter(availability__teacher=request.user)
+
+    selected_date = None
+    if selected_date_str:
+        try:
+            selected_date = datetime.strptime(selected_date_str, "%Y-%m-%d").date()
+            base_qs = base_qs.filter(availability__date=selected_date)
+        except ValueError:
+            selected_date = None
+
+    if show_past:
+        bookings_qs = base_qs.filter(availability__date__lt=today).order_by(
+            "-availability__date",
+            "-availability__start_time",
+            "student__last_name",
+            "student__first_name",
+        )
+    else:
+        bookings_qs = base_qs.filter(availability__date__gte=today).order_by(
+            "availability__date",
+            "availability__start_time",
+            "student__last_name",
+            "student__first_name",
+        )
+
+    bookings = list(bookings_qs)
+    context = {
+        "bookings": bookings,
+        "show_past": show_past,
+        "selected_date": selected_date_str if selected_date else "",
+        "today": today,
+    }
+    return render(request, "users/teacher_bookings.html", context)
 
 
 @role_required(["teacher"])

@@ -13,6 +13,7 @@ urlpatterns = [
     # dashboards / placeholders (so redirects resolve without other apps)
     path("student/", views.student_home, name="student_home"),
     path("teacher/", views.teacher_home, name="teacher_home"),
+    path("teacher/bookings/", views.teacher_bookings, name="teacher_bookings"),
     path("teacher/calendar/", views.teacher_calendar, name="teacher_calendar"),
     path("admin-home/", views.admin_home, name="admin_home"),
     path(
