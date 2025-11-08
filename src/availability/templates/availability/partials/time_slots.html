@@ -123,7 +123,7 @@
       }
     }"
     :class="{
-      'bg-red-50 border-red-200 ring-1 ring-red-100': isBooked,
+      'bg-sky-50 border-sky-200 ring-1 ring-sky-100': isBooked,
       'opacity-60 bg-muted': isBlocked && !isBooked,
       'bg-card hover:bg-accent/50': !isBlocked && !isBooked
     }"
@@ -133,8 +133,8 @@
     <div class="min-w-[180px]">
       <span class="text-sm font-medium">{{ slot.display_time }}</span>
       {% if slot.is_booked %}
-      <div class="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-red-700">
-        <span class="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5">
+      <div class="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-sky-800 dark:text-sky-200">
+        <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-amber-900 dark:bg-amber-300/20 dark:text-amber-100">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2H6zm2 6a1 1 0 112 0v3.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3A1 1 0 016.707 10.293L8 11.586V8z" clip-rule="evenodd" />
           </svg>
@@ -142,9 +142,14 @@
         </span>
       </div>
       {% if slot.booking_message %}
-      <div class="mt-1 text-xs text-red-700/80">
-        <span class="font-semibold">Student note:</span>
-        {{ slot.booking_message }}
+      <div class="mt-1 flex items-start gap-1.5 text-sm text-sky-900/90 dark:text-sky-100">
+        <span class="mt-0.5 text-sky-500 dark:text-sky-300">
+          {% include "core/icons/chat.html" with class="h-4 w-4" %}
+        </span>
+        <span>
+          <span class="font-semibold text-sky-900 dark:text-sky-100">Student note:</span>
+          {{ slot.booking_message }}
+        </span>
       </div>
       {% endif %}
       {% endif %}
