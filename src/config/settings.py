@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     "core.apps.CoreConfig",
     "users.apps.UsersConfig",
     "availability.apps.AvailabilityConfig",
+    "booking.apps.BookingConfig",
     "profiles.apps.ProfilesConfig",
     "questionnaire.apps.QuestionnaireConfig",
 ]

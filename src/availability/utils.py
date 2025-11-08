@@ -182,13 +182,27 @@ def generate_time_slots(selected_date: date, teacher=None) -> list[dict]:
     if teacher:
         from .models import Availability
 
-        availabilities = Availability.objects.filter(teacher=teacher, date=selected_date)
+        availabilities = Availability.objects.filter(
+            teacher=teacher, date=selected_date
+        ).select_related("booking__student")
         for avail in availabilities:
             # Key by start_time
+            booking = getattr(avail, "booking", None)
+            booking_student = getattr(booking, "student", None)
+            booked_student_name = ""
+            booked_student_email = ""
+            if booking_student:
+                booked_student_name = booking_student.get_full_name() or booking_student.email
+                booked_student_email = booking_student.email
+
             existing_availabilities[avail.start_time] = {
                 "meeting_type": avail.meeting_type,
                 "availability_id": avail.id,
                 "message": avail.message,
+                "is_booked": booking is not None,
+                "booking_student_name": booked_student_name,
+                "booking_student_email": booked_student_email,
+                "booking_message": booking.message if booking else "",
             }
 
     slots = []
@@ -225,22 +239,26 @@ def generate_time_slots(selected_date: date, teacher=None) -> list[dict]:
                 blocking_meeting_type = availability.meeting_type
                 break
 
-        slots.append(
-            {
-                "start_time": slot_start,
-                "end_time": slot_end,
-                "display_time": (
-                    f"{current_time.strftime('%I:%M %p')} - "
-                    f"{(current_time + timedelta(minutes=meeting_duration)).strftime('%I:%M %p')}"
-                ),
-                "is_available": avail_data is not None,
-                "meeting_type": avail_data["meeting_type"] if avail_data else None,
-                "availability_id": avail_data["availability_id"] if avail_data else None,
-                "message": avail_data["message"] if avail_data else "",
-                "is_blocked": is_blocked,
-                "blocking_meeting_type": blocking_meeting_type,
-            }
-        )
+        slot_info = {
+            "start_time": slot_start,
+            "end_time": slot_end,
+            "display_time": (
+                f"{current_time.strftime('%I:%M %p')} - "
+                f"{(current_time + timedelta(minutes=meeting_duration)).strftime('%I:%M %p')}"
+            ),
+            "is_available": avail_data is not None,
+            "meeting_type": avail_data["meeting_type"] if avail_data else None,
+            "availability_id": avail_data["availability_id"] if avail_data else None,
+            "message": avail_data["message"] if avail_data else "",
+            "is_blocked": is_blocked,
+            "blocking_meeting_type": blocking_meeting_type,
+            "is_booked": bool(avail_data and avail_data.get("is_booked")),
+            "booking_student_name": (avail_data or {}).get("booking_student_name", ""),
+            "booking_student_email": (avail_data or {}).get("booking_student_email", ""),
+            "booking_message": (avail_data or {}).get("booking_message", ""),
+        }
+
+        slots.append(slot_info)
 
         # Move to next 15-minute slot
         current_time += timedelta(minutes=slot_duration)

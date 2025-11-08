@@ -167,13 +167,29 @@
               <div class="space-y-3">
                 {% for slot in slots %}
                   <div
-                    class="flex items-center gap-4 p-4 rounded-lg border hover:bg-accent/50 transition-colors"
+                    class="flex items-center gap-4 p-4 rounded-lg border hover:bg-accent/50 transition-colors {% if slot.booking %}border-red-200 bg-red-50 ring-1 ring-red-100{% endif %}"
                     data-meeting-type="{{ slot.meeting_type }}"
                     x-show="filter === 'all' || filter === '{{ slot.meeting_type }}'"
                   >
                     {# Time #}
                     <div class="flex-shrink-0 w-40">
                       <div class="font-medium">{{ slot.start_time|time:"g:i A" }} - {{ slot.end_time|time:"g:i A" }}</div>
+                      {% if slot.booking %}
+                        <div class="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-red-700">
+                          <span class="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5">
+                            Booked
+                            {% if slot.booking.student %}
+                              by {{ slot.booking.student.get_full_name|default:slot.booking.student.email }}
+                            {% endif %}
+                          </span>
+                        </div>
+                        {% if slot.booking.message %}
+                        <div class="mt-1 text-xs text-red-700/80">
+                          <span class="font-semibold">Student note:</span>
+                          {{ slot.booking.message }}
+                        </div>
+                        {% endif %}
+                      {% endif %}
                     </div>
 
                     {# Teacher Info #}
@@ -246,7 +262,7 @@
               <div class="space-y-3">
                 {% for slot in teacher_data.slots %}
                   <div
-                    class="flex items-center gap-4 p-4 rounded-lg border hover:bg-accent/50 transition-colors"
+                    class="flex items-center gap-4 p-4 rounded-lg border hover:bg-accent/50 transition-colors {% if slot.booking %}border-red-200 bg-red-50 ring-1 ring-red-100{% endif %}"
                     data-meeting-type="{{ slot.meeting_type }}"
                     data-slot-date="{{ slot.date|date:'Y-m-d' }}"
                     x-show="(filter === 'all' || filter === '{{ slot.meeting_type }}') && (!selectedDate || selectedDate === '{{ slot.date|date:"Y-m-d" }}')"
@@ -259,6 +275,22 @@
                     {# Time #}
                     <div class="flex-shrink-0 w-40">
                       <div class="font-medium">{{ slot.start_time|time:"g:i A" }} - {{ slot.end_time|time:"g:i A" }}</div>
+                      {% if slot.booking %}
+                        <div class="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-red-700">
+                          <span class="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5">
+                            Booked
+                            {% if slot.booking.student %}
+                              by {{ slot.booking.student.get_full_name|default:slot.booking.student.email }}
+                            {% endif %}
+                          </span>
+                        </div>
+                        {% if slot.booking.message %}
+                        <div class="mt-1 text-xs text-red-700/80">
+                          <span class="font-semibold">Student note:</span>
+                          {{ slot.booking.message }}
+                        </div>
+                        {% endif %}
+                      {% endif %}
                     </div>
 
                     {# Meeting Type Badge #}

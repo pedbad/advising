@@ -132,7 +132,7 @@
             formData.append('message', this.bookingMessage);
             formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
 
-            const response = await fetch('{% url "users:book_meeting" %}', {
+            const response = await fetch('{% url "booking:book_meeting" %}', {
               method: 'POST',
               body: formData
             });
@@ -158,7 +158,7 @@
             const formData = new FormData();
             formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
 
-            const response = await fetch(`/users/student/cancel-booking/${bookingId}/`, {
+            const response = await fetch(`/booking/student/cancel-booking/${bookingId}/`, {
               method: 'POST',
               body: formData
             });

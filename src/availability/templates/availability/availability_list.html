@@ -44,6 +44,7 @@
                   selectedType: {% if slot.is_available %}'{{ slot.meeting_type }}'{% else %}null{% endif %},
                   isBlocked: {{ slot.is_blocked|yesno:'true,false' }},
                   blockingType: {% if slot.blocking_meeting_type %}'{{ slot.blocking_meeting_type }}'{% else %}null{% endif %},
+                  isBooked: {{ slot.is_booked|yesno:'true,false' }},
                   saving: false,
 
                   isActive(type) {
@@ -89,14 +90,28 @@
                   }
                 }"
                 :class="{
-                  'opacity-60 bg-muted': isBlocked,
-                  'bg-card hover:bg-accent/50': !isBlocked
+                  'bg-red-50 border-red-200 ring-1 ring-red-100': isBooked,
+                  'opacity-60 bg-muted': isBlocked && !isBooked,
+                  'bg-card hover:bg-accent/50': !isBlocked && !isBooked
                 }"
                 class="flex items-center gap-3 p-3 rounded-lg border transition-colors"
               >
                 {# Time Display #}
                 <div class="min-w-[180px]">
                   <span class="text-sm font-medium">{{ slot.display_time }}</span>
+                  {% if slot.is_booked %}
+                  <div class="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-red-700">
+                    <span class="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5">
+                      Booked{% if slot.booking_student_name %} by {{ slot.booking_student_name }}{% endif %}
+                    </span>
+                  </div>
+                  {% if slot.booking_message %}
+                  <div class="mt-1 text-xs text-red-700/80">
+                    <span class="font-semibold">Student note:</span>
+                    {{ slot.booking_message }}
+                  </div>
+                  {% endif %}
+                  {% endif %}
                 </div>
 
                 {# Meeting Type Buttons or Blocked Message #}

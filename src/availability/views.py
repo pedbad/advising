@@ -212,7 +212,7 @@ def upcoming_availability_list(request):
     tomorrow = today + timedelta(days=1)
     availabilities = (
         Availability.objects.filter(date__gte=today)
-        .select_related("teacher")
+        .select_related("teacher", "booking__student")
         .order_by("date", "start_time", "teacher__last_name", "teacher__first_name")
     )
 
