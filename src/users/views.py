@@ -210,7 +210,10 @@ def book_meeting(request):
                         return JsonResponse(
                             {
                                 "success": False,
-                                "error": "You already have a booking on this date. You can only book one slot per day.",
+                                "error": (
+                                    "You already have a booking on this date. "
+                                    "You can only book one slot per day."
+                                ),
                             },
                             status=400,
                         )
@@ -220,10 +223,16 @@ def book_meeting(request):
                         availability=availability, student=request.user, message=message
                     )
 
-                    messages.success(
-                        request,
-                        f"Booking confirmed! Your {availability.get_meeting_type_display()} appointment with {availability.teacher.get_full_name() or availability.teacher.email} on {availability.date.strftime('%B %d, %Y')} at {availability.start_time.strftime('%-I:%M %p')} has been scheduled.",
+                    confirmation_msg = (
+                        "Booking confirmed! Your "
+                        f"{availability.get_meeting_type_display()} appointment with "
+                        f"{availability.teacher.get_full_name() or availability.teacher.email} "
+                        f"on {availability.date.strftime('%B %d, %Y')} "
+                        f"at {availability.start_time.strftime('%-I:%M %p')} "
+                        "has been scheduled."
                     )
+
+                    messages.success(request, confirmation_msg)
 
                     return JsonResponse(
                         {
@@ -351,10 +360,13 @@ def cancel_booking(request, booking_id):
         # Delete the booking
         booking.delete()
 
-        messages.success(
-            request,
-            f"Booking cancelled. Your {meeting_type} appointment with {teacher_name} on {date_str} at {time_str} has been cancelled.",
+        cancel_msg = (
+            "Booking cancelled. "
+            f"Your {meeting_type} appointment with {teacher_name} on {date_str} "
+            f"at {time_str} has been cancelled."
         )
+
+        messages.success(request, cancel_msg)
 
         return JsonResponse({"success": True, "message": "Booking cancelled successfully."})
 
