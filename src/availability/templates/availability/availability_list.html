@@ -42,25 +42,65 @@
                 x-data="{
                   slotTime: '{{ slot.start_time|time:"H:i:s" }}',
                   selectedType: {% if slot.is_available %}'{{ slot.meeting_type }}'{% else %}null{% endif %},
+                  message: '{{ slot.message|escapejs }}',
                   isBlocked: {{ slot.is_blocked|yesno:'true,false' }},
                   blockingType: {% if slot.blocking_meeting_type %}'{{ slot.blocking_meeting_type }}'{% else %}null{% endif %},
                   isBooked: {{ slot.is_booked|yesno:'true,false' }},
                   saving: false,
+                  showNoteModal: false,
+                  pendingType: null,
+                  pendingAction: null,
+                  tempMessage: '',
 
                   isActive(type) {
                     return this.selectedType === type;
                   },
 
-                  async selectType(type) {
+                  startSetType(type) {
                     if (this.saving) return;
+                    if (this.selectedType === type) {
+                      this.selectType(type, 'delete');
+                      return;
+                    }
+                    this.pendingType = type;
+                    this.pendingAction = 'set';
+                    this.tempMessage = this.message || '';
+                    this.showNoteModal = true;
+                  },
+
+                  editMessage() {
+                    if (!this.selectedType || this.saving) return;
+                    this.pendingType = this.selectedType;
+                    this.pendingAction = 'set';
+                    this.tempMessage = this.message || '';
+                    this.showNoteModal = true;
+                  },
+
+                  cancelModal() {
+                    this.showNoteModal = false;
+                    this.pendingType = null;
+                    this.pendingAction = null;
+                    this.tempMessage = '';
+                  },
+
+                  async confirmModal() {
+                    const note = (this.tempMessage || '').trim();
+                    await this.selectType(this.pendingType, this.pendingAction, note);
+                    this.cancelModal();
+                  },
+
+                  async selectType(type, forcedAction = null, overrideMessage = null) {
+                    if (this.saving || !type) return;
                     this.saving = true;
 
-                    const action = this.selectedType === type ? 'delete' : 'set';
+                    const action = forcedAction ?? (this.selectedType === type ? 'delete' : 'set');
+                    const messageValue = action === 'delete' ? '' : (overrideMessage ?? this.message ?? '');
 
                     const formData = new FormData();
                     formData.append('date', '{{ item.date|date:"Y-m-d" }}');
                     formData.append('start_time', this.slotTime);
                     formData.append('meeting_type', type);
+                    formData.append('message', messageValue);
                     formData.append('action', action);
                     formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
 
@@ -76,7 +116,8 @@
                       const data = await response.json();
 
                       if (data.success) {
-                        // Reload the page to update the list
+                        this.message = messageValue;
+                        this.selectedType = action === 'delete' ? null : type;
                         window.location.reload();
                       } else {
                         alert('Error: ' + (data.error || 'Failed to save availability'));
@@ -125,7 +166,7 @@
                     <div class="flex gap-2 flex-1">
                       <button
                         type="button"
-                        @click="selectType('online')"
+                        @click="startSetType('online')"
                         :disabled="saving"
                         :class="{
                           'bg-blue-500 text-white border-blue-600': isActive('online'),
@@ -138,7 +179,7 @@
 
                       <button
                         type="button"
-                        @click="selectType('in_person')"
+                        @click="startSetType('in_person')"
                         :disabled="saving"
                         :class="{
                           'bg-green-500 text-white border-green-600': isActive('in_person'),
@@ -151,7 +192,7 @@
 
                       <button
                         type="button"
-                        @click="selectType('both')"
+                        @click="startSetType('both')"
                         :disabled="saving"
                         :class="{
                           'bg-purple-500 text-white border-purple-600': isActive('both'),
@@ -162,12 +203,6 @@
                         Both
                       </button>
 
-                      {# Message Display #}
-                      {% if slot.message %}
-                      <div class="w-full mt-2 px-3 py-2 text-xs rounded-md bg-amber-50 border border-amber-200 text-amber-900">
-                        <span class="font-medium">Note:</span> {{ slot.message }}
-                      </div>
-                      {% endif %}
                     </div>
                   </template>
 
@@ -196,6 +231,73 @@
                       </span>
                     </div>
                   </template>
+                </div>
+
+                <div class="flex flex-col gap-2 flex-1">
+                  <template x-if="message">
+                    <div class="w-full px-3 py-2 text-xs rounded-md bg-amber-50 border border-amber-200 text-amber-900 dark:bg-amber-300/20 dark:text-amber-100">
+                      <span class="font-medium">Note:</span>
+                      <span x-text="message"></span>
+                    </div>
+                  </template>
+                  <button
+                    type="button"
+                    x-show="selectedType && !isBlocked"
+                    @click="editMessage()"
+                    :disabled="saving"
+                    class="inline-flex w-fit items-center gap-1.5 text-xs font-medium rounded-md border border-input px-2.5 py-1 hover:bg-accent hover:text-accent-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {% include "core/icons/chat.html" with class="h-3.5 w-3.5" %}
+                    Add / Edit note
+                  </button>
+                </div>
+
+                <div
+                  x-show="showNoteModal"
+                  x-cloak
+                  x-transition.opacity
+                  class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
+                  @keydown.escape.window="cancelModal()"
+                >
+                  <div class="w-full max-w-lg rounded-xl border bg-card text-card-foreground shadow-xl">
+                    <div class="border-b px-5 py-4">
+                      <h3 class="text-lg font-semibold">Add a note for this slot</h3>
+                      <p class="text-sm text-muted-foreground">
+                        Students will see this note when browsing availability. You can leave it blank if not needed.
+                      </p>
+                    </div>
+                    <div class="px-5 py-4 space-y-3">
+                      <label class="text-sm font-medium" for="list-note-{{ forloop.counter }}">Note (optional)</label>
+                      <textarea
+                        id="list-note-{{ forloop.counter }}"
+                        x-model="tempMessage"
+                        maxlength="600"
+                        rows="4"
+                        class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                        placeholder="Add context for this slot..."
+                      ></textarea>
+                      <div class="text-right text-xs text-muted-foreground">
+                        <span x-text="(tempMessage || '').length"></span>/600
+                      </div>
+                    </div>
+                    <div class="flex items-center justify-end gap-3 border-t px-5 py-4">
+                      <button
+                        type="button"
+                        class="inline-flex items-center justify-center rounded-md border border-input px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+                        @click="cancelModal()"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        class="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                        @click="confirmModal()"
+                        :disabled="saving"
+                      >
+                        Save note
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
               {% endfor %}

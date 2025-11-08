@@ -10,28 +10,59 @@
       blockingType: {% if slot.blocking_meeting_type %}'{{ slot.blocking_meeting_type }}'{% else %}null{% endif %},
       isBooked: {{ slot.is_booked|yesno:'true,false' }},
       saving: false,
-
-      init() {
-        console.log('Alpine component initialized for slot:', this.slotTime, 'selectedType:', this.selectedType, 'isBlocked:', this.isBlocked);
-      },
+      showNoteModal: false,
+      pendingType: null,
+      pendingAction: null,
+      tempMessage: '',
 
       isActive(type) {
         return this.selectedType === type;
       },
 
-      async selectType(type) {
-        console.log('selectType called with type:', type);
+      startSetType(type) {
         if (this.saving) return;
-        this.saving = true;
+        if (this.selectedType === type) {
+          this.selectType(type, 'delete');
+          return;
+        }
+        this.pendingType = type;
+        this.pendingAction = 'set';
+        this.tempMessage = this.message || '';
+        this.showNoteModal = true;
+      },
 
-        const action = this.selectedType === type ? 'delete' : 'set';
-        console.log('Action:', action, 'Current selectedType:', this.selectedType);
+      editMessage() {
+        if (!this.selectedType || this.saving) return;
+        this.pendingType = this.selectedType;
+        this.pendingAction = 'set';
+        this.tempMessage = this.message || '';
+        this.showNoteModal = true;
+      },
+
+      cancelModal() {
+        this.showNoteModal = false;
+        this.pendingType = null;
+        this.pendingAction = null;
+        this.tempMessage = '';
+      },
+
+      async confirmModal() {
+        const note = (this.tempMessage || '').trim();
+        await this.selectType(this.pendingType, this.pendingAction, note);
+        this.cancelModal();
+      },
+
+      async selectType(type, forcedAction = null, overrideMessage = null) {
+        if (this.saving || !type) return;
+        this.saving = true;
+        const action = forcedAction ?? (this.selectedType === type ? 'delete' : 'set');
+        const messageValue = action === 'delete' ? '' : (overrideMessage ?? this.message ?? '');
 
         const formData = new FormData();
         formData.append('date', '{{ selected_date|date:"Y-m-d" }}');
         formData.append('start_time', this.slotTime);
         formData.append('meeting_type', type);
-        formData.append('message', this.message);
+        formData.append('message', messageValue);
         formData.append('action', action);
         formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
         {% if is_admin_view and viewing_teacher %}
@@ -47,22 +78,23 @@
             body: formData,
           });
 
-          console.log('Response status:', response.status);
           const data = await response.json();
-          console.log('Response data:', data);
 
           if (data.success) {
-            // Get current scroll position of the container
+            this.message = messageValue;
+            if (action === 'delete') {
+              this.selectedType = null;
+            } else {
+              this.selectedType = type;
+            }
+
             const container = document.getElementById('time-slots-container');
             const scrollTop = container ? container.scrollTop : 0;
 
-            // Trigger HTMX to reload just the time slots section
-            // Use pathname + search to preserve query parameters (e.g., ?teacher_id=2)
             htmx.ajax('GET', window.location.pathname + window.location.search, {
               target: '#time-slots-wrapper',
               swap: 'innerHTML show:none'
             }).then(() => {
-              // Restore scroll position after swap
               const newContainer = document.getElementById('time-slots-container');
               if (newContainer) {
                 newContainer.scrollTop = scrollTop;
@@ -70,54 +102,11 @@
             });
           } else {
             alert('Error: ' + (data.error || 'Failed to save availability'));
-            this.saving = false;
           }
         } catch (error) {
           console.error('Fetch error:', error);
           alert('Error: ' + error.message);
-          this.saving = false;
-        }
-      },
-
-      async saveMessage() {
-        console.log('saveMessage called');
-        if (this.saving || !this.selectedType) return;
-        this.saving = true;
-
-        const formData = new FormData();
-        formData.append('date', '{{ selected_date|date:"Y-m-d" }}');
-        formData.append('start_time', this.slotTime);
-        formData.append('meeting_type', this.selectedType);
-        formData.append('message', this.message);
-        formData.append('action', 'set');
-        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-        {% if is_admin_view and viewing_teacher %}
-        formData.append('teacher_id', '{{ viewing_teacher.id }}');
-        {% endif %}
-
-        try {
-          const response = await fetch('{% url 'availability:save_availability' %}', {
-            method: 'POST',
-            headers: {
-              'X-CSRFToken': '{{ csrf_token }}'
-            },
-            body: formData,
-          });
-
-          console.log('saveMessage response status:', response.status);
-          const data = await response.json();
-          console.log('saveMessage response data:', data);
-
-          if (data.success) {
-            console.log('Message saved successfully');
-            this.saving = false;
-          } else {
-            alert('Error: ' + (data.error || 'Failed to save message'));
-            this.saving = false;
-          }
-        } catch (error) {
-          console.error('saveMessage fetch error:', error);
-          alert('Error: ' + error.message);
+        } finally {
           this.saving = false;
         }
       }
@@ -161,7 +150,7 @@
         <div class="flex gap-2 flex-1 items-center">
           <button
             type="button"
-            @click="selectType('online')"
+            @click="startSetType('online')"
             :disabled="saving"
             :class="{
               'bg-blue-500 text-white border-blue-600': isActive('online'),
@@ -174,7 +163,7 @@
 
           <button
             type="button"
-            @click="selectType('in_person')"
+            @click="startSetType('in_person')"
             :disabled="saving"
             :class="{
               'bg-green-500 text-white border-green-600': isActive('in_person'),
@@ -187,7 +176,7 @@
 
           <button
             type="button"
-            @click="selectType('both')"
+            @click="startSetType('both')"
             :disabled="saving"
             :class="{
               'bg-purple-500 text-white border-purple-600': isActive('both'),
@@ -197,18 +186,6 @@
           >
             Both
           </button>
-
-          {# Message Input Field #}
-          <input
-            type="text"
-            x-model="message"
-            placeholder="Optional note..."
-            maxlength="200"
-            :disabled="!selectedType || saving"
-            @keydown.enter="saveMessage()"
-            @blur="saveMessage()"
-            class="flex-1 px-3 py-1.5 text-xs rounded-md border border-input bg-background focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
-          >
         </div>
       </template>
 
@@ -237,6 +214,73 @@
           </span>
         </div>
       </template>
+    </div>
+
+    <div class="flex flex-col gap-2 flex-1">
+      <template x-if="message">
+        <div class="w-full px-3 py-2 text-xs rounded-md bg-amber-50 border border-amber-200 text-amber-900 dark:bg-amber-300/20 dark:text-amber-100">
+          <span class="font-semibold">Note:</span>
+          <span x-text="message"></span>
+        </div>
+      </template>
+      <button
+        type="button"
+        x-show="selectedType && !isBlocked"
+        @click="editMessage()"
+        :disabled="saving"
+        class="inline-flex w-fit items-center gap-1.5 text-xs font-medium rounded-md border border-input px-2.5 py-1 hover:bg-accent hover:text-accent-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {% include "core/icons/chat.html" with class="h-3.5 w-3.5" %}
+        Add / Edit note
+      </button>
+    </div>
+
+    <div
+      x-show="showNoteModal"
+      x-cloak
+      x-transition.opacity
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
+      @keydown.escape.window="cancelModal()"
+    >
+      <div class="w-full max-w-lg rounded-xl border bg-card text-card-foreground shadow-xl">
+        <div class="border-b px-5 py-4">
+          <h3 class="text-lg font-semibold">Add a note for this slot</h3>
+          <p class="text-sm text-muted-foreground">
+            Students will see this note when browsing availability. You can leave it blank if not needed.
+          </p>
+        </div>
+        <div class="px-5 py-4 space-y-3">
+          <label class="text-sm font-medium" for="slot-note-{{ forloop.counter }}">Note (optional)</label>
+          <textarea
+            id="slot-note-{{ forloop.counter }}"
+            x-model="tempMessage"
+            maxlength="600"
+            rows="4"
+            class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            placeholder="Add context for this slot..."
+          ></textarea>
+          <div class="text-right text-xs text-muted-foreground">
+            <span x-text="(tempMessage || '').length"></span>/600
+          </div>
+        </div>
+        <div class="flex items-center justify-end gap-3 border-t px-5 py-4">
+          <button
+            type="button"
+            class="inline-flex items-center justify-center rounded-md border border-input px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+            @click="cancelModal()"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            @click="confirmModal()"
+            :disabled="saving"
+          >
+            Save note
+          </button>
+        </div>
+      </div>
     </div>
   </div>
   {% endfor %}
