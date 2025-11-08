@@ -2,6 +2,7 @@
 Views for the availability app.
 """
 
+from collections import OrderedDict
 from datetime import date, datetime, timedelta
 
 from django.conf import settings
@@ -9,6 +10,7 @@ from django.http import Http404, JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_http_methods
 
+from booking.models import Booking
 from users.decorators import role_required
 
 from .models import Availability
@@ -244,6 +246,74 @@ def upcoming_availability_list(request):
     }
 
     return render(request, "availability/upcoming_availability.html", context)
+
+
+@role_required(["admin"])
+def all_bookings_view(request):
+    """
+    Display all booked slots with filtering controls.
+    """
+    today = date.today()
+    tomorrow = today + timedelta(days=1)
+    show_past = request.GET.get("show") == "past"
+
+    base_qs = Booking.objects.select_related("availability__teacher", "student")
+    if show_past:
+        bookings_qs = base_qs.filter(availability__date__lt=today).order_by(
+            "-availability__date",
+            "-availability__start_time",
+            "availability__teacher__last_name",
+            "availability__teacher__first_name",
+            "student__last_name",
+        )
+    else:
+        bookings_qs = base_qs.filter(availability__date__gte=today).order_by(
+            "availability__date",
+            "availability__start_time",
+            "availability__teacher__last_name",
+            "availability__teacher__first_name",
+            "student__last_name",
+        )
+
+    bookings = list(bookings_qs)
+
+    bookings_by_date = OrderedDict()
+    bookings_by_teacher = []
+    teacher_map = {}
+
+    for booking in bookings:
+        booking_date = booking.availability.date
+        if booking_date not in bookings_by_date:
+            bookings_by_date[booking_date] = []
+        bookings_by_date[booking_date].append(booking)
+
+        teacher = booking.availability.teacher
+        if teacher.id not in teacher_map:
+            entry = {"teacher": teacher, "bookings": []}
+            teacher_map[teacher.id] = entry
+            bookings_by_teacher.append(entry)
+        teacher_map[teacher.id]["bookings"].append(booking)
+
+    all_slots = [
+        {
+            "date": booking.availability.date.isoformat(),
+            "meeting_type": booking.availability.meeting_type,
+            "teacher_id": booking.availability.teacher_id,
+        }
+        for booking in bookings
+    ]
+
+    context = {
+        "bookings_by_date": bookings_by_date,
+        "bookings_by_teacher": bookings_by_teacher,
+        "has_bookings": bool(bookings),
+        "today": today,
+        "tomorrow": tomorrow,
+        "all_slots": all_slots,
+        "show_past": show_past,
+    }
+
+    return render(request, "availability/all_bookings.html", context)
 
 
 @require_http_methods(["POST"])
