@@ -201,9 +201,28 @@ def book_meeting(request):
                             status=400,
                         )
 
+                    # Check if student already has a booking on this date
+                    existing_booking_on_date = Booking.objects.filter(
+                        student=request.user, availability__date=availability.date
+                    ).exists()
+
+                    if existing_booking_on_date:
+                        return JsonResponse(
+                            {
+                                "success": False,
+                                "error": "You already have a booking on this date. You can only book one slot per day.",
+                            },
+                            status=400,
+                        )
+
                     # Create the booking
                     booking = Booking.objects.create(
                         availability=availability, student=request.user, message=message
+                    )
+
+                    messages.success(
+                        request,
+                        f"Booking confirmed! Your {availability.get_meeting_type_display()} appointment with {availability.teacher.get_full_name() or availability.teacher.email} on {availability.date.strftime('%B %d, %Y')} at {availability.start_time.strftime('%-I:%M %p')} has been scheduled.",
                     )
 
                     return JsonResponse(
@@ -225,17 +244,44 @@ def book_meeting(request):
     today = date.today()
     tomorrow = today + timedelta(days=1)
 
-    # Fetch all upcoming availability slots that are NOT booked
+    # Fetch all upcoming availability slots (both booked and unbooked)
     availabilities = (
         Availability.objects.filter(date__gte=today)
-        .filter(booking__isnull=True)  # Only show unbooked slots
         .select_related("teacher")
+        .prefetch_related("booking")
         .order_by("date", "start_time", "teacher__last_name", "teacher__first_name")
     )
 
+    # Get student's own bookings
+    student_booking_ids = set(
+        Booking.objects.filter(student=request.user, availability__date__gte=today).values_list(
+            "availability_id", flat=True
+        )
+    )
+
+    # Create a mapping of availability_id to booking for student's bookings
+    student_bookings_dict = {
+        booking.availability_id: booking
+        for booking in Booking.objects.filter(
+            student=request.user, availability__date__gte=today
+        ).select_related("availability")
+    }
+
+    # Filter slots: show unbooked OR booked by current student (hide booked by others)
+    filtered_availabilities = []
+    for avail in availabilities:
+        is_booked_by_others = hasattr(avail, "booking") and avail.booking.student != request.user
+        if not is_booked_by_others:
+            # Add flag to indicate if this is the student's booking
+            avail.is_my_booking = avail.id in student_booking_ids
+            # Attach booking object if it's the student's booking
+            if avail.is_my_booking:
+                avail.booking = student_bookings_dict.get(avail.id)
+            filtered_availabilities.append(avail)
+
     # Group by teacher
     by_teacher = OrderedDict()
-    for avail in availabilities:
+    for avail in filtered_availabilities:
         teacher_key = avail.teacher.id
         if teacher_key not in by_teacher:
             by_teacher[teacher_key] = {
@@ -246,21 +292,74 @@ def book_meeting(request):
 
     # Group by date
     by_date = OrderedDict()
-    for avail in availabilities:
+    for avail in filtered_availabilities:
         if avail.date not in by_date:
             by_date[avail.date] = []
         by_date[avail.date].append(avail)
+
+    # Get dates where student has bookings (for disabling other slots on same date)
+    booked_dates = list(
+        Booking.objects.filter(student=request.user, availability__date__gte=today)
+        .values_list("availability__date", flat=True)
+        .distinct()
+    )
+    booked_dates_iso = [d.isoformat() for d in booked_dates]
 
     context = {
         "has_completed_questionnaire": True,
         "availabilities_by_teacher": list(by_teacher.values()),
         "availabilities_by_date": by_date,
-        "has_slots": len(availabilities) > 0,
+        "has_slots": len(filtered_availabilities) > 0,
         "today": today,
         "tomorrow": tomorrow,
+        "booked_dates": booked_dates_iso,
     }
 
     return render(request, "users/book_meeting.html", context)
+
+
+@role_required(["student"])
+def cancel_booking(request, booking_id):
+    """
+    Cancel a booking for a student.
+
+    Only allows students to cancel their own bookings.
+    """
+    from django.http import JsonResponse
+    from django.shortcuts import get_object_or_404
+
+    from availability.models import Booking
+
+    if request.method != "POST":
+        return JsonResponse({"success": False, "error": "Invalid request method."}, status=405)
+
+    try:
+        # Get the booking and ensure it belongs to the current student
+        booking = get_object_or_404(
+            Booking.objects.select_related("availability", "availability__teacher"),
+            id=booking_id,
+            student=request.user,
+        )
+
+        # Store booking info for success message
+        availability = booking.availability
+        teacher_name = availability.teacher.get_full_name() or availability.teacher.email
+        date_str = availability.date.strftime("%B %d, %Y")
+        time_str = availability.start_time.strftime("%-I:%M %p")
+        meeting_type = availability.get_meeting_type_display()
+
+        # Delete the booking
+        booking.delete()
+
+        messages.success(
+            request,
+            f"Booking cancelled. Your {meeting_type} appointment with {teacher_name} on {date_str} at {time_str} has been cancelled.",
+        )
+
+        return JsonResponse({"success": True, "message": "Booking cancelled successfully."})
+
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
 
 
 @role_required(["teacher"])
