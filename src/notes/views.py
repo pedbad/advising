@@ -98,8 +98,8 @@ def my_notes(request):
             note.role_badge_label = "Advisor note"
         else:
             note.role_card_class = (
-                "bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-600 "
-                "text-violet-950 dark:text-violet-100"
+                "bg-violet-50 dark:bg-violet-900/20 border border-violet-200 "
+                "dark:border-violet-600 text-violet-950 dark:text-violet-100"
             )
             note.role_icon_class = "text-violet-500"
             note.role_icon_full_class = "h-4 w-4 text-violet-500"
@@ -145,9 +145,7 @@ def student_selector(request):
 
 @role_required(["teacher", "admin"])
 def student_notes(request, student_id):
-    profile = get_object_or_404(
-        StudentProfile.objects.select_related("user"), user_id=student_id
-    )
+    profile = get_object_or_404(StudentProfile.objects.select_related("user"), user_id=student_id)
 
     if profile.user.role != User.Roles.STUDENT:
         messages.error(request, "Notes are only available for student accounts.")
@@ -185,8 +183,8 @@ def student_notes(request, student_id):
             note.role_badge_label = "Advisor note"
         else:
             note.role_card_class = (
-                "bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-600 "
-                "text-violet-950 dark:text-violet-100"
+                "bg-violet-50 dark:bg-violet-900/20 border border-violet-200 "
+                "dark:border-violet-600 text-violet-950 dark:text-violet-100"
             )
             note.role_icon_class = "text-violet-500"
             note.role_icon_full_class = "h-4 w-4 text-violet-500"

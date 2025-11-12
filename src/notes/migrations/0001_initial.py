@@ -15,7 +15,12 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="StudentNote",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
                 ("title", models.CharField(blank=True, max_length=200)),
                 ("body", models.TextField()),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
@@ -54,7 +59,12 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="NoteComment",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
                 ("body", models.TextField()),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
@@ -79,6 +89,8 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name="studentnote",
-            index=models.Index(fields=["student_profile", "created_at"], name="notes_note_student_6dd17b_idx"),
+            index=models.Index(
+                fields=["student_profile", "created_at"], name="notes_note_student_6dd17b_idx"
+            ),
         ),
     ]
