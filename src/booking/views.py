@@ -6,12 +6,14 @@ from collections import OrderedDict
 from datetime import date, timedelta
 
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from django.http import JsonResponse
+from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, render
 
 from availability.models import Availability
 from booking.models import Booking
+from notifications.ics import build_booking_ics
 from users.decorators import role_required
 
 
@@ -221,3 +223,24 @@ def cancel_booking(request, booking_id):
 
     except Exception as e:
         return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+
+@login_required
+def booking_ics(request, booking_id):
+    booking = get_object_or_404(
+        Booking.objects.select_related("availability", "availability__teacher", "student"),
+        id=booking_id,
+    )
+    user = request.user
+    role = getattr(user, "role", "")
+    if not (
+        role == "admin"
+        or booking.student_id == user.id
+        or booking.availability.teacher_id == user.id
+    ):
+        return HttpResponseForbidden("You do not have permission to download this event.")
+
+    ics_content = build_booking_ics(booking=booking)
+    response = HttpResponse(ics_content, content_type="text/calendar")
+    response["Content-Disposition"] = f'attachment; filename="booking-{booking.id}.ics"'
+    return response

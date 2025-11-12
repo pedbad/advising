@@ -10,6 +10,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.urls import reverse
 
+from notifications.ics import build_booking_ics
 from users.utils import get_domain_and_scheme
 
 
@@ -36,7 +37,14 @@ class Recipient:
         return self.email
 
 
-def _send_email(*, subject: str, template: str, context: dict, recipient: Recipient):
+def _send_email(
+    *,
+    subject: str,
+    template: str,
+    context: dict,
+    recipient: Recipient,
+    attachments: list[tuple[str, str, str]] | None = None,
+):
     """Render a notification template (txt + optional html) and send to a single recipient."""
     if not recipient or not recipient.email:
         return
@@ -58,6 +66,9 @@ def _send_email(*, subject: str, template: str, context: dict, recipient: Recipi
     )
     if html_body:
         msg.attach_alternative(html_body, "text/html")
+    if attachments:
+        for filename, content, mimetype in attachments:
+            msg.attach(filename, content, mimetype)
     msg.send()
 
 
@@ -72,6 +83,8 @@ def send_booking_confirmation(*, booking):
         "protocol": "https" if use_https else "http",
     }
     protocol = "https" if use_https else "http"
+    ics_content = build_booking_ics(booking=booking)
+    attachment = (f"booking-{booking.id}.ics", ics_content, "text/calendar")
 
     student_recipient = Recipient(email=booking.student.email, name=booking.student.get_full_name())
     _send_email(
@@ -82,6 +95,7 @@ def send_booking_confirmation(*, booking):
             "dashboard_url": f"{protocol}://{domain}{reverse('booking:book_meeting')}",
         },
         recipient=student_recipient,
+        attachments=[attachment],
     )
 
     advisor = booking.availability.teacher
@@ -94,6 +108,7 @@ def send_booking_confirmation(*, booking):
             "dashboard_url": f"{protocol}://{domain}{reverse('users:teacher_bookings')}",
         },
         recipient=advisor_recipient,
+        attachments=[attachment],
     )
 
     admin_url = f"{protocol}://{domain}{reverse('availability:upcoming_availability')}"
@@ -103,6 +118,7 @@ def send_booking_confirmation(*, booking):
             template="booking_confirmation_admin",
             context={**context, "dashboard_url": admin_url},
             recipient=admin,
+            attachments=[attachment],
         )
 
 

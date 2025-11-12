@@ -5,5 +5,5 @@ Student {{ student.get_full_name|default:student.email }} cancelled their sessio
 View upcoming availability:
 {{ dashboard_url }}
 
-Thanks,
+Best,
 {{ SITE_NAME }} Team

@@ -5,5 +5,5 @@ Hi {{ advisor.get_full_name|default:advisor.email }},
 Review your schedule:
 {{ dashboard_url }}
 
-Thanks,
+Best,
 {{ SITE_NAME }} Team

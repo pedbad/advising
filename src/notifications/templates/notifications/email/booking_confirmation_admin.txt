@@ -7,8 +7,8 @@ Time: {{ slot.start_time }} – {{ slot.end_time }}
 Student note: {{ booking.message|default:'—' }}
 Advisor note: {{ slot.message|default:'—' }}
 
-View all upcoming availability:
+View upcoming availability:
 {{ dashboard_url }}
 
-Thanks,
+Best,
 {{ SITE_NAME }} Team

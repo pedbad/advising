@@ -10,5 +10,5 @@ Your note: {{ booking.message|default:'—' }}
 Manage your bookings:
 {{ dashboard_url }}
 
-Thanks,
+Best,
 {{ SITE_NAME }} Team

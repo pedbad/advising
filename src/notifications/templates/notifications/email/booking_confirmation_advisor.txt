@@ -10,5 +10,5 @@ Your slot note: {{ slot.message|default:'—' }}
 View upcoming bookings:
 {{ dashboard_url }}
 
-Thanks,
+Best,
 {{ SITE_NAME }} Team
