@@ -73,7 +73,7 @@ class EmailLoginView(LoginView):
         user = self.request.user
 
         # Check if user is a student and has not completed questionnaire
-        if user.role == "student":
+        if user.role == "student" and getattr(settings, "FORCE_QUESTIONNAIRE_COMPLETION", False):
             # Check if student profile exists and questionnaire is incomplete
             if hasattr(user, "student_profile"):
                 if not user.student_profile.has_completed_questionnaire():

@@ -46,6 +46,12 @@ SITE_DESCRIPTION = os.getenv(
     "SITE_DESCRIPTION",
     "LangCon — a clean, accessible Django 5 + Tailwind v4 starter.",
 )
+FORCE_QUESTIONNAIRE_COMPLETION = os.getenv("FORCE_QUESTIONNAIRE_COMPLETION", "false").lower() in {
+    "1",
+    "true",
+    "yes",
+    "on",
+}
 
 
 # Application definition
@@ -77,6 +83,7 @@ INSTALLED_APPS = [
     "profiles.apps.ProfilesConfig",
     "questionnaire.apps.QuestionnaireConfig",
     "notes.apps.NotesConfig",
+    "notifications.apps.NotificationsConfig",
 ]
 
 if DEBUG:

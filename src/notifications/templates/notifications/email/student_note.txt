@@ -1,0 +1,13 @@
+Hi {{ student.get_full_name|default:student.email }},
+
+{{ advisor.get_full_name|default:advisor.email }} left a new note for you.
+
+Title: {{ note.title|default:'(no title)' }}
+Message:
+{{ note.body }}
+
+View your notes:
+{{ protocol }}://{{ domain }}{% url 'notes:my_notes' %}
+
+Thanks,
+{{ SITE_NAME }} Team

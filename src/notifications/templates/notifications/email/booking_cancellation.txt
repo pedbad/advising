@@ -1,0 +1,11 @@
+Hello {{ student.get_full_name|default:student.email }},
+
+Your booking with {{ advisor.get_full_name|default:advisor.email }} on {{ slot.date }} at {{ slot.start_time }} has been cancelled.
+
+If this was unexpected please reach out to your advisor.
+
+View your remaining bookings:
+{{ protocol }}://{{ domain }}{% url 'booking:book_meeting' %}
+
+Thanks,
+{{ SITE_NAME }} Team

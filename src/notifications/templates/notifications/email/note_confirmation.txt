@@ -1,0 +1,13 @@
+Hi {{ advisor.get_full_name|default:advisor.email }},
+
+We delivered your note to {{ student.get_full_name|default:student.email }}.
+
+Title: {{ note.title|default:'(no title)' }}
+Message:
+{{ note.body }}
+
+You can review the thread here:
+{{ protocol }}://{{ domain }}{% url 'notes:student_notes' student.id %}
+
+Thanks,
+{{ SITE_NAME }} Team
