@@ -11,6 +11,7 @@ urlpatterns = [
     path("availability/", include("availability.urls", namespace="availability")),
     path("profiles/", include("profiles.urls", namespace="profiles")),
     path("questionnaire/", include("questionnaire.urls", namespace="questionnaire")),
+    path("notes/", include("notes.urls", namespace="notes")),
 ]
 
 if settings.DEBUG:

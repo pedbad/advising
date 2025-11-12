@@ -22,25 +22,27 @@
       {# DESKTOP NAV (≥ sm) #}
       <div class="hidden sm:flex items-center gap-6 ml-6">
 
-        {# Public: Home #}
-        <a
-          href="{% url 'core:landing' %}"
-          class="nav-link focus-ring rounded-md px-2 py-1.5 {% active_url 'core:landing' %}"
-          {% aria_current 'core:landing' %}
-        >
-          {% icon 'home' class_='h-5 w-5 align-middle shrink-0' %}
-          <span>Home</span>
-        </a>
+        {% if not request.user.is_authenticated %}
+          {# Public: Home #}
+          <a
+            href="{% url 'core:landing' %}"
+            class="nav-link focus-ring rounded-md px-2 py-1.5 {% active_url 'core:landing' %}"
+            {% aria_current 'core:landing' %}
+          >
+            {% icon 'home' class_='h-5 w-5 align-middle shrink-0' %}
+            <span>Home</span>
+          </a>
 
-        {# Public: About (treat /about/* as active) #}
-        <a
-          href="{% url 'core:about' %}"
-          class="nav-link focus-ring rounded-md px-2 py-1.5 {% active_url 'core:about' startswith='/about/' %}"
-          {% aria_current 'core:about' startswith='/about/' %}
-        >
-          {% icon 'info' class_='h-5 w-5 align-middle shrink-0' %}
-          <span>About</span>
-        </a>
+          {# Public: About (treat /about/* as active) #}
+          <a
+            href="{% url 'core:about' %}"
+            class="nav-link focus-ring rounded-md px-2 py-1.5 {% active_url 'core:about' startswith='/about/' %}"
+            {% aria_current 'core:about' startswith='/about/' %}
+          >
+            {% icon 'info' class_='h-5 w-5 align-middle shrink-0' %}
+            <span>About</span>
+          </a>
+        {% endif %}
 
         {% if request.user.is_authenticated %}
 
@@ -102,25 +104,47 @@
               </svg>
               <span>Book Meeting</span>
             </a>
-          {% elif request.user|is_teacher %}
             <a
-              href="{% url 'availability:availability_list' %}"
-              class="nav-link focus-ring rounded-md px-2 py-1.5 {% active_url 'availability:availability_list' startswith='/availability/list' %}"
-              {% aria_current 'availability:availability_list' startswith='/availability/list' %}
-            >
-              <span>Availability</span>
-            </a>
-            <a
-              href="{% url 'users:student_list' %}"
-              class="nav-link focus-ring rounded-md px-2 py-1.5 {% active_url 'users:student_list' startswith='/users/students' %}"
-              {% aria_current 'users:student_list' startswith='/users/students' %}
+              href="{% url 'notes:my_notes' %}"
+              class="nav-link focus-ring rounded-md px-2 py-1.5 {% active_url 'notes:my_notes' startswith='/notes/mine' %}"
+              {% aria_current 'notes:my_notes' startswith='/notes/mine' %}
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 w-5 align-middle shrink-0">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 6.75h15m-15 3.75h9m-9 3.75H9M6 4.5V3a1.5 1.5 0 0 1 1.5-1.5h9A1.5 1.5 0 0 1 18 3v1.5M6 19.5V21a1.5 1.5 0 0 0 1.5 1.5h9A1.5 1.5 0 0 0 18 21v-1.5" />
               </svg>
-              <span>Students</span>
+              <span>Notes</span>
             </a>
-          {% endif %}
+          {% elif request.user|is_teacher or request.user|is_admin %}
+        {% if request.user|is_teacher %}
+          <a
+            href="{% url 'availability:availability_list' %}"
+            class="nav-link focus-ring rounded-md px-2 py-1.5 {% active_url 'availability:availability_list' startswith='/availability/list' %}"
+            {% aria_current 'availability:availability_list' startswith='/availability/list' %}
+          >
+            <span>Availability</span>
+          </a>
+        {% endif %}
+        <a
+          href="{% url 'users:student_list' %}"
+          class="nav-link focus-ring rounded-md px-2 py-1.5 {% active_url 'users:student_list' startswith='/users/students' %}"
+          {% aria_current 'users:student_list' startswith='/users/students' %}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 w-5 align-middle shrink-0">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+          </svg>
+          <span>Students</span>
+        </a>
+        <a
+          href="{% url 'notes:student_selector' %}"
+          class="nav-link focus-ring rounded-md px-2 py-1.5 {% active_url 'notes:student_selector' 'notes:student_notes' startswith='/notes/students' %}"
+          {% aria_current 'notes:student_selector' 'notes:student_notes' startswith='/notes/students' %}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 w-5 align-middle shrink-0">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 6.75h15m-15 3.75h9m-9 3.75H9M6 4.5V3a1.5 1.5 0 0 1 1.5-1.5h9A1.5 1.5 0 0 1 18 3v1.5M6 19.5V21a1.5 1.5 0 0 0 1.5 1.5h9A1.5 1.5 0 0 0 18 21v-1.5" />
+          </svg>
+          <span>Notes</span>
+        </a>
+      {% endif %}
 
           {# Profile #}
           <a
@@ -208,29 +232,31 @@
     :aria-hidden="(!open).toString()"
   >
 
-    {# Home #}
-    <a
-      href="{% url 'core:landing' %}"
-      class="nav-link focus-ring flex w-full rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground {% active_url 'core:landing' %}"
-      {% aria_current 'core:landing' %}
-      @click="open = false"
-      role="menuitem"
-    >
-      {% icon 'home' class_='h-5 w-5 align-middle shrink-0' %}
-      <span>Home</span>
-    </a>
+    {% if not request.user.is_authenticated %}
+      {# Home #}
+      <a
+        href="{% url 'core:landing' %}"
+        class="nav-link focus-ring flex w-full rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground {% active_url 'core:landing' %}"
+        {% aria_current 'core:landing' %}
+        @click="open = false"
+        role="menuitem"
+      >
+        {% icon 'home' class_='h-5 w-5 align-middle shrink-0' %}
+        <span>Home</span>
+      </a>
 
-    {# About (treat /about/* as active) #}
-    <a
-      href="{% url 'core:about' %}"
-      class="nav-link focus-ring flex w-full rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground {% active_url 'core:about' startswith='/about/' %}"
-      {% aria_current 'core:about' startswith='/about/' %}
-      @click="open = false"
-      role="menuitem"
-    >
-      {% icon 'info' class_='h-5 w-5 align-middle shrink-0' %}
-      <span>About</span>
-    </a>
+      {# About (treat /about/* as active) #}
+      <a
+        href="{% url 'core:about' %}"
+        class="nav-link focus-ring flex w-full rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground {% active_url 'core:about' startswith='/about/' %}"
+        {% aria_current 'core:about' startswith='/about/' %}
+        @click="open = false"
+        role="menuitem"
+      >
+        {% icon 'info' class_='h-5 w-5 align-middle shrink-0' %}
+        <span>About</span>
+      </a>
+    {% endif %}
 
     {% if request.user.is_authenticated %}
 
@@ -302,16 +328,30 @@
           </svg>
           <span>Book Meeting</span>
         </a>
-      {% elif request.user|is_teacher %}
         <a
-          href="{% url 'availability:availability_list' %}"
-          class="nav-link focus-ring flex w-full rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground {% active_url 'availability:availability_list' startswith='/availability/list' %}"
-          {% aria_current 'availability:availability_list' startswith='/availability/list' %}
+          href="{% url 'notes:my_notes' %}"
+          class="nav-link focus-ring flex w-full rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground {% active_url 'notes:my_notes' startswith='/notes/mine' %}"
+          {% aria_current 'notes:my_notes' startswith='/notes/mine' %}
           @click="open = false"
           role="menuitem"
         >
-          <span>Availability</span>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 w-5 align-middle shrink-0">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 6.75h15m-15 3.75h9m-9 3.75H9M6 4.5V3a1.5 1.5 0 0 1 1.5-1.5h9A1.5 1.5 0 0 1 18 3v1.5M6 19.5V21a1.5 1.5 0 0 0 1.5 1.5h9A1.5 1.5 0 0 0 18 21v-1.5" />
+          </svg>
+          <span>Notes</span>
         </a>
+      {% elif request.user|is_teacher or request.user|is_admin %}
+        {% if request.user|is_teacher %}
+          <a
+            href="{% url 'availability:availability_list' %}"
+            class="nav-link focus-ring flex w-full rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground {% active_url 'availability:availability_list' startswith='/availability/list' %}"
+            {% aria_current 'availability:availability_list' startswith='/availability/list' %}
+            @click="open = false"
+            role="menuitem"
+          >
+            <span>Availability</span>
+          </a>
+        {% endif %}
         <a
           href="{% url 'users:student_list' %}"
           class="nav-link focus-ring flex w-full rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground {% active_url 'users:student_list' startswith='/users/students' %}"
@@ -323,6 +363,18 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
           </svg>
           <span>Students</span>
+        </a>
+        <a
+          href="{% url 'notes:student_selector' %}"
+          class="nav-link focus-ring flex w-full rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground {% active_url 'notes:student_selector' 'notes:student_notes' startswith='/notes/students' %}"
+          {% aria_current 'notes:student_selector' 'notes:student_notes' startswith='/notes/students' %}
+          @click="open = false"
+          role="menuitem"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 w-5 align-middle shrink-0">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 6.75h15m-15 3.75h9m-9 3.75H9M6 4.5V3a1.5 1.5 0 0 1 1.5-1.5h9A1.5 1.5 0 0 1 18 3v1.5M6 19.5V21a1.5 1.5 0 0 0 1.5 1.5h9A1.5 1.5 0 0 0 18 21v-1.5" />
+          </svg>
+          <span>Notes</span>
         </a>
       {% endif %}
 

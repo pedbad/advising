@@ -76,6 +76,7 @@ INSTALLED_APPS = [
     "booking.apps.BookingConfig",
     "profiles.apps.ProfilesConfig",
     "questionnaire.apps.QuestionnaireConfig",
+    "notes.apps.NotesConfig",
 ]
 
 if DEBUG:

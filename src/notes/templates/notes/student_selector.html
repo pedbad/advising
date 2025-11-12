@@ -1,0 +1,50 @@
+{% extends "core/base.html" %}
+
+{% block title %}Student Notes - Search - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+  <div>
+    <p class="text-sm text-muted-foreground uppercase tracking-wide">Notes</p>
+    <h1 class="text-3xl font-semibold">Find a student</h1>
+    <p class="text-muted-foreground">Search by name or email to open a student's note page.</p>
+  </div>
+
+  <form method="get" class="flex flex-col gap-3 sm:flex-row">
+    <input
+      type="text"
+      name="q"
+      value="{{ search_query }}"
+      placeholder="Search students by name or email"
+      class="flex h-11 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+    />
+    <button
+      type="submit"
+      class="inline-flex h-11 shrink-0 items-center justify-center rounded-md bg-primary px-6 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
+    >
+      Search
+    </button>
+  </form>
+
+  <div class="space-y-3">
+    {% for student in students %}
+      <c-card class="p-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p class="text-lg font-semibold">{{ student.get_full_name|default:student.email }}</p>
+          <p class="text-sm text-muted-foreground">{{ student.email }}</p>
+        </div>
+        <a
+          href="{% url 'notes:student_notes' student.id %}"
+          class="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium shadow-xs hover:bg-accent hover:text-accent-foreground"
+        >
+          View notes
+        </a>
+      </c-card>
+    {% empty %}
+      <c-card class="p-8 text-center text-muted-foreground">
+        No students match your search.
+      </c-card>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,232 @@
+{% extends "core/base.html" %}
+{% load static user_roles icons %}
+
+{% block title %}Student Notes - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-6" x-data="{ noteModal: {{ note_form_has_errors|yesno:'true,false'|default:'false' }} }">
+  <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <p class="text-sm text-muted-foreground uppercase tracking-wide">Student notes</p>
+      <h1 class="text-3xl font-semibold">
+        {% if is_staff_view %}
+          {{ student_profile.user.get_full_name|default:student_profile.user.email }}
+        {% else %}
+          Your advisor notes
+        {% endif %}
+      </h1>
+      <p class="text-muted-foreground">
+        {% if is_staff_view %}
+          Notes are visible to this student and all advisors/admins.
+        {% else %}
+          Notes shared between you and your advisors live here.
+        {% endif %}
+      </p>
+    </div>
+    {% if is_staff_view %}
+      <a
+        href="{% url 'notes:student_selector' %}"
+        class="inline-flex items-center justify-center gap-2 h-9 px-4 py-2 rounded-md border border-input bg-background text-sm font-medium shadow-xs hover:bg-accent hover:text-accent-foreground"
+      >
+        Back to student search
+      </a>
+    {% endif %}
+  </div>
+
+  <div class="flex justify-end">
+    <button
+      type="button"
+      class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
+      @click="noteModal = true"
+    >
+      {% icon 'sticky_note' class_='h-4 w-4' %}
+      Add note
+    </button>
+  </div>
+
+  <div class="space-y-4">
+    {% for note in notes %}
+      <div class="rounded-xl border shadow-sm p-6 space-y-4 {{ note.role_card_class }}" x-data="{ commentModal: {{ note.comment_has_error|yesno:'true,false'|default:'false' }} }">
+        <div class="flex flex-col gap-2">
+          <div class="flex flex-wrap items-center gap-2 justify-between">
+            <div class="flex flex-col gap-1">
+              <div class="flex items-center gap-2">
+                {% if note.role_is_staff %}
+                  <img src="{% static 'core/img/logo-cap.svg' %}" alt="" class="h-4 w-4 align-middle dark:hidden">
+                  <img src="{% static 'core/img/logo-cap-blue.svg' %}" alt="" class="h-4 w-4 align-middle hidden dark:inline">
+                {% else %}
+                  {% icon 'forum' class_='h-4 w-4 text-violet-500' %}
+                {% endif %}
+                <p class="text-sm font-semibold">{{ note.created_by.get_full_name|default:note.created_by.email }}</p>
+              </div>
+              <p class="text-xs text-muted-foreground">
+                {{ note.created_at|date:"M j, Y g:i a" }}
+              </p>
+            </div>
+            {% if note.updated_by and note.updated_by != note.created_by %}
+              <p class="text-xs text-muted-foreground">Updated by {{ note.updated_by.get_full_name|default:note.updated_by.email }}</p>
+            {% endif %}
+          </div>
+          <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium {{ note.role_badge_class }}">
+            {{ note.role_badge_label }}
+          </span>
+          {% if note.title %}
+            <h3 class="text-lg font-semibold">{{ note.title }}</h3>
+          {% endif %}
+          <div class="prose prose-sm max-w-none dark:prose-invert break-words">
+            {{ note.body|linebreaksbr }}
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <h4 class="text-sm font-semibold">Comments</h4>
+          <div class="space-y-3">
+            {% for comment in note.comments.all %}
+              {% with role=comment.author.role %}
+                <div class="flex {% if role == comment.author.Roles.STUDENT %}justify-start{% else %}justify-end{% endif %}">
+                  <div class="max-w-[90%] rounded-lg border px-4 py-3 shadow-sm space-y-2
+                    {% if role == comment.author.Roles.ADMIN %}
+                      bg-amber-50 border-amber-200 text-amber-950
+                    {% elif role == comment.author.Roles.TEACHER %}
+                      bg-sky-50 border-sky-200 text-slate-900
+                    {% else %}
+                      bg-muted/40 border-border text-foreground
+                    {% endif %}
+                    {% if role != comment.author.Roles.STUDENT %} text-right {% endif %}
+                  ">
+                    <div class="flex items-center gap-2 {% if role != comment.author.Roles.STUDENT %}justify-end{% endif %}">
+                      {% if role == comment.author.Roles.ADMIN %}
+                        <img src="{% static 'core/img/logo-cap.svg' %}" alt="" class="h-4 w-4 align-middle dark:hidden">
+                        <img src="{% static 'core/img/logo-cap-blue.svg' %}" alt="" class="h-4 w-4 align-middle hidden dark:inline">
+                      {% elif role == comment.author.Roles.TEACHER %}
+                        <img src="{% static 'core/img/logo-cap.svg' %}" alt="" class="h-4 w-4 align-middle dark:hidden">
+                        <img src="{% static 'core/img/logo-cap-blue.svg' %}" alt="" class="h-4 w-4 align-middle hidden dark:inline">
+                      {% else %}
+                        {% icon 'forum' class_='h-4 w-4 text-violet-500' %}
+                      {% endif %}
+                      <p class="text-sm font-medium">{{ comment.author.get_full_name|default:comment.author.email }}</p>
+                    </div>
+                    <p class="text-xs text-muted-foreground {% if role != comment.author.Roles.STUDENT %}text-right{% endif %}">
+                      {{ comment.created_at|date:"M j, Y g:i a" }}
+                    </p>
+                    <p class="text-sm break-words">{{ comment.body|linebreaksbr }}</p>
+                  </div>
+                </div>
+              {% endwith %}
+            {% empty %}
+              <p class="text-sm text-muted-foreground">No comments yet.</p>
+            {% endfor %}
+          </div>
+          <div class="flex justify-end">
+            <button
+              type="button"
+              class="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-card text-card-foreground px-3 py-1.5 text-xs font-medium shadow-xs hover:bg-accent"
+              @click="commentModal = true"
+            >
+              Add comment
+            </button>
+          </div>
+
+          <div
+            x-show="commentModal"
+            x-transition.opacity
+            x-cloak
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+            aria-modal="true"
+            role="dialog"
+            @keydown.escape.window="commentModal = false"
+            @click.self="commentModal = false"
+          >
+            <div class="w-full max-w-lg rounded-lg bg-card shadow-lg border border-border">
+              <div class="border-b px-6 py-3 flex items-center justify-between">
+                <h3 class="text-base font-semibold">Add a comment</h3>
+                <button type="button" class="text-muted-foreground hover:text-foreground" @click="commentModal = false">✕</button>
+              </div>
+              <form method="post" class="space-y-3 px-6 py-5">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_comment">
+                <input type="hidden" name="note_id" value="{{ note.id }}">
+                <div>
+                  {% if note.comment_has_error %}
+                    {{ comment_form.body }}
+                    {% for error in comment_form.body.errors %}
+                      <p class="text-sm text-red-600">{{ error }}</p>
+                    {% endfor %}
+                    {% for error in comment_form.non_field_errors %}
+                      <p class="text-sm text-red-600">{{ error }}</p>
+                    {% endfor %}
+                  {% else %}
+                    {{ blank_comment_form.body }}
+                  {% endif %}
+                </div>
+                <div class="flex justify-end gap-2">
+                  <button type="button" class="inline-flex items-center gap-2 rounded-md border border-input px-4 py-1.5 text-sm hover:bg-accent" @click="commentModal = false">
+                    Cancel
+                  </button>
+                  <button type="submit" class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90">
+                    Save
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <c-card class="p-10 text-center space-y-3">
+        <h3 class="text-xl font-semibold">No notes yet</h3>
+        <p class="text-muted-foreground">Start the conversation by adding a note above.</p>
+      </c-card>
+    {% endfor %}
+  </div>
+
+  <div
+    x-show="noteModal"
+    x-transition.opacity
+    x-cloak
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+    aria-modal="true"
+    role="dialog"
+    @keydown.escape.window="noteModal = false"
+    @click.self="noteModal = false"
+  >
+    <div class="w-full max-w-xl rounded-lg bg-card shadow-lg border border-border">
+      <div class="border-b px-6 py-4 flex items-center justify-between">
+        <h3 class="text-lg font-semibold">Add a new note</h3>
+        <button class="text-muted-foreground hover:text-foreground" type="button" @click="noteModal = false">✕</button>
+      </div>
+      <form method="post" class="space-y-4 px-6 py-6">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="create_note">
+        <div>
+          <label class="text-sm font-medium" for="id_title">Title (optional)</label>
+          {{ note_form.title }}
+          {% for error in note_form.title.errors %}
+            <p class="text-sm text-red-600">{{ error }}</p>
+          {% endfor %}
+        </div>
+        <div>
+          <label class="text-sm font-medium" for="id_body">Note</label>
+          {{ note_form.body }}
+          {% for error in note_form.body.errors %}
+            <p class="text-sm text-red-600">{{ error }}</p>
+          {% endfor %}
+        </div>
+        {% if note_form.non_field_errors %}
+          {% for error in note_form.non_field_errors %}
+            <p class="text-sm text-red-600">{{ error }}</p>
+          {% endfor %}
+        {% endif %}
+        <div class="flex justify-end gap-2">
+          <button type="button" class="inline-flex items-center gap-2 rounded-md border border-input px-4 py-2 text-sm font-medium hover:bg-accent" @click="noteModal = false">
+            Cancel
+          </button>
+          <button type="submit" class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
+            Post note
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

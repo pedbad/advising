@@ -10,7 +10,7 @@
   </p>
 
   {# Dashboard Cards #}
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     {# Questionnaire Card #}
     <a href="{% url 'questionnaire:questionnaire' %}" class="block group">
       <c-card class="p-6 hover:shadow-lg transition-shadow duration-300">
@@ -73,6 +73,28 @@
           </h2>
           <p class="text-sm text-muted-foreground mt-2">
             View available slots and book your appointment
+          </p>
+        </div>
+      </c-card>
+    </a>
+
+    {# Notes Card #}
+    <a href="{% url 'notes:my_notes' %}" class="block group">
+      <c-card class="p-6 hover:shadow-lg transition-shadow duration-300 h-full">
+        <div class="flex flex-col items-center text-center">
+          <div class="flex items-center justify-center w-20 h-20 rounded-full bg-primary transition-all duration-200 transform group-hover:scale-110">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-primary-foreground">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 6.75A2.25 2.25 0 0 1 5.25 4.5h10.5A2.25 2.25 0 0 1 18 6.75v10.5A2.25 2.25 0 0 1 15.75 19.5H5.25A2.25 2.25 0 0 1 3 17.25V6.75ZM6 8.25h6M6 12h6m-6 3.75h3.75M15 9.75l4.5-4.5M15 9.75V6h3.75" />
+            </svg>
+          </div>
+          <h2 class="text-xl font-semibold mt-4 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 6.75h15m-15 3.75h9m-9 3.75H9M6 4.5V3A1.5 1.5 0 0 1 7.5 1.5h9A1.5 1.5 0 0 1 18 3v1.5M6 19.5V21a1.5 1.5 0 0 0 1.5 1.5h9A1.5 1.5 0 0 0 18 21v-1.5" />
+            </svg>
+            Advisor Notes
+          </h2>
+          <p class="text-sm text-muted-foreground mt-2">
+            Review conversations with advisors and leave replies.
           </p>
         </div>
       </c-card>
