@@ -1,0 +1,9 @@
+Hi {{ recipient.display_name }},
+
+Student {{ student.get_full_name|default:student.email }} cancelled their session with {{ advisor.get_full_name|default:advisor.email }} on {{ slot.date }}.
+
+View upcoming availability:
+{{ dashboard_url }}
+
+Thanks,
+{{ SITE_NAME }} Team

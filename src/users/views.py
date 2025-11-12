@@ -1,6 +1,8 @@
 # users/views.py
 
 # Django imports
+from datetime import date, timedelta
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model, update_session_auth_hash
@@ -157,8 +159,25 @@ def student_home(request):
 
 @role_required(["teacher"])
 def teacher_home(request):
-    """Teacher home page placeholder."""
-    return render(request, "users/teacher_home.html")
+    """Teacher home page with upcoming bookings."""
+    today = date.today()
+    week_end = today + timedelta(days=7)
+
+    upcoming_bookings = (
+        Booking.objects.select_related("availability", "availability__teacher", "student")
+        .filter(
+            availability__teacher=request.user,
+            availability__date__gte=today,
+            availability__date__lte=week_end,
+        )
+        .order_by("availability__date", "availability__start_time")
+    )
+
+    context = {
+        "upcoming_bookings": upcoming_bookings,
+        "week_range": (today, week_end),
+    }
+    return render(request, "users/teacher_home.html", context)
 
 
 @role_required(["teacher"])

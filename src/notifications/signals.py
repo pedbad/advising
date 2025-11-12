@@ -7,6 +7,7 @@ from booking.models import Booking
 from notes.models import NoteComment, StudentNote
 from notifications import emails
 
+
 @receiver(post_save, sender=Booking)
 def booking_created(sender, instance: Booking, created: bool, **kwargs):
     if not created:

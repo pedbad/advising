@@ -1,0 +1,14 @@
+Hi {{ student.get_full_name|default:student.email }},
+
+Your {{ slot.get_meeting_type_display|default:slot.meeting_type }} session with {{ advisor.get_full_name|default:advisor.email }} is confirmed.
+
+Date: {{ slot.date }}
+Time: {{ slot.start_time }} – {{ slot.end_time }}
+Advisor note: {{ slot.message|default:'—' }}
+Your note: {{ booking.message|default:'—' }}
+
+Manage your bookings:
+{{ dashboard_url }}
+
+Thanks,
+{{ SITE_NAME }} Team

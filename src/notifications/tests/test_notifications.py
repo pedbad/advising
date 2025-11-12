@@ -1,4 +1,5 @@
 import datetime
+
 import pytest
 
 from availability.models import Availability
@@ -52,7 +53,9 @@ def availability(teacher_user):
 
 
 @pytest.mark.django_db
-def test_booking_creation_sends_notifications(admin_user, teacher_user, student_user, availability, mailoutbox):
+def test_booking_creation_sends_notifications(
+    admin_user, teacher_user, student_user, availability, mailoutbox
+):
     Booking.objects.create(availability=availability, student=student_user, message="Need help")
     assert len(mailoutbox) == 3  # student, advisor, admin
     subjects = {message.subject for message in mailoutbox}
@@ -60,7 +63,9 @@ def test_booking_creation_sends_notifications(admin_user, teacher_user, student_
 
 
 @pytest.mark.django_db
-def test_booking_cancellation_sends_notifications(admin_user, student_user, availability, mailoutbox):
+def test_booking_cancellation_sends_notifications(
+    admin_user, student_user, availability, mailoutbox
+):
     booking = Booking.objects.create(availability=availability, student=student_user)
     mailoutbox.clear()
     booking.delete()

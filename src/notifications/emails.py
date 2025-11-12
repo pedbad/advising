@@ -3,51 +3,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Iterable
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
+from django.urls import reverse
 
 from users.utils import get_domain_and_scheme
-
-
-@dataclass
-class Recipient:
-    email: str
-    name: str | None = None
-
-    def display_name(self) -> str:
-        if self.name:
-            return self.name
-        return self.email
-
-
-def _send_email(*, subject: str, template: str, context: dict, to: Iterable[Recipient]):
-    """Render a notification template (txt + optional html) and send."""
-    if not to:
-        return
-
-    context = {"SITE_NAME": getattr(settings, "SITE_NAME", "Advising"), **context}
-    recipients = [recipient for recipient in to if recipient.email]
-    for recipient in recipients:
-        txt_body = render_to_string(f"notifications/email/{template}.txt", context)
-        html_path = f"notifications/email/{template}.html"
-        try:
-            html_body = render_to_string(html_path, context)
-        except Exception:
-            html_body = None
-
-        msg = EmailMultiAlternatives(
-            subject=subject,
-            body=txt_body,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            to=[recipient.email],
-        )
-        if html_body:
-            msg.attach_alternative(html_body, "text/html")
-        msg.send()
 
 
 def admin_recipients() -> list[Recipient]:
@@ -62,6 +25,42 @@ def admin_recipients() -> list[Recipient]:
     return recipients
 
 
+@dataclass
+class Recipient:
+    email: str
+    name: str | None = None
+
+    def display_name(self) -> str:
+        if self.name:
+            return self.name
+        return self.email
+
+
+def _send_email(*, subject: str, template: str, context: dict, recipient: Recipient):
+    """Render a notification template (txt + optional html) and send to a single recipient."""
+    if not recipient or not recipient.email:
+        return
+
+    context = {"SITE_NAME": getattr(settings, "SITE_NAME", "Advising"), **context}
+    context = {**context, "recipient": recipient}
+    txt_body = render_to_string(f"notifications/email/{template}.txt", context)
+    html_path = f"notifications/email/{template}.html"
+    try:
+        html_body = render_to_string(html_path, context)
+    except Exception:
+        html_body = None
+
+    msg = EmailMultiAlternatives(
+        subject=subject,
+        body=txt_body,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[recipient.email],
+    )
+    if html_body:
+        msg.attach_alternative(html_body, "text/html")
+    msg.send()
+
+
 def send_booking_confirmation(*, booking):
     domain, use_https = get_domain_and_scheme()
     context = {
@@ -72,17 +71,39 @@ def send_booking_confirmation(*, booking):
         "domain": domain,
         "protocol": "https" if use_https else "http",
     }
-    recipients = [
-        Recipient(email=booking.student.email, name=booking.student.get_full_name()),
-        Recipient(email=booking.availability.teacher.email, name=booking.availability.teacher.get_full_name()),
-    ]
-    recipients.extend(admin_recipients())
+    protocol = "https" if use_https else "http"
+
+    student_recipient = Recipient(email=booking.student.email, name=booking.student.get_full_name())
     _send_email(
         subject="Booking confirmed",
-        template="booking_confirmation",
-        context=context,
-        to=recipients,
+        template="booking_confirmation_student",
+        context={
+            **context,
+            "dashboard_url": f"{protocol}://{domain}{reverse('booking:book_meeting')}",
+        },
+        recipient=student_recipient,
     )
+
+    advisor = booking.availability.teacher
+    advisor_recipient = Recipient(email=advisor.email, name=advisor.get_full_name())
+    _send_email(
+        subject="Booking confirmed",
+        template="booking_confirmation_advisor",
+        context={
+            **context,
+            "dashboard_url": f"{protocol}://{domain}{reverse('users:teacher_bookings')}",
+        },
+        recipient=advisor_recipient,
+    )
+
+    admin_url = f"{protocol}://{domain}{reverse('availability:upcoming_availability')}"
+    for admin in admin_recipients():
+        _send_email(
+            subject="Booking confirmed",
+            template="booking_confirmation_admin",
+            context={**context, "dashboard_url": admin_url},
+            recipient=admin,
+        )
 
 
 def send_booking_cancellation(*, booking):
@@ -95,17 +116,39 @@ def send_booking_cancellation(*, booking):
         "domain": domain,
         "protocol": "https" if use_https else "http",
     }
-    recipients = [
-        Recipient(email=booking.student.email, name=booking.student.get_full_name()),
-        Recipient(email=booking.availability.teacher.email, name=booking.availability.teacher.get_full_name()),
-    ]
-    recipients.extend(admin_recipients())
+    protocol = "https" if use_https else "http"
+
+    student_recipient = Recipient(email=booking.student.email, name=booking.student.get_full_name())
     _send_email(
         subject="Booking cancelled",
-        template="booking_cancellation",
-        context=context,
-        to=recipients,
+        template="booking_cancellation_student",
+        context={
+            **context,
+            "dashboard_url": f"{protocol}://{domain}{reverse('booking:book_meeting')}",
+        },
+        recipient=student_recipient,
     )
+
+    advisor = booking.availability.teacher
+    advisor_recipient = Recipient(email=advisor.email, name=advisor.get_full_name())
+    _send_email(
+        subject="Booking cancelled",
+        template="booking_cancellation_advisor",
+        context={
+            **context,
+            "dashboard_url": f"{protocol}://{domain}{reverse('users:teacher_bookings')}",
+        },
+        recipient=advisor_recipient,
+    )
+
+    admin_url = f"{protocol}://{domain}{reverse('availability:upcoming_availability')}"
+    for admin in admin_recipients():
+        _send_email(
+            subject="Booking cancelled",
+            template="booking_cancellation_admin",
+            context={**context, "dashboard_url": admin_url},
+            recipient=admin,
+        )
 
 
 def send_student_note_notification(*, note):
@@ -117,12 +160,15 @@ def send_student_note_notification(*, note):
         "domain": domain,
         "protocol": "https" if use_https else "http",
     }
-    recipients = [Recipient(email=note.student_profile.user.email, name=note.student_profile.user.get_full_name())]
+    student_recipient = Recipient(
+        email=note.student_profile.user.email,
+        name=note.student_profile.user.get_full_name(),
+    )
     _send_email(
         subject="New advisor note",
         template="student_note",
         context=context,
-        to=recipients,
+        recipient=student_recipient,
     )
 
 
@@ -135,12 +181,15 @@ def send_student_note_confirmation(*, note):
         "domain": domain,
         "protocol": "https" if use_https else "http",
     }
-    recipients = [Recipient(email=note.created_by.email, name=note.created_by.get_full_name())]
+    advisor_recipient = Recipient(
+        email=note.created_by.email,
+        name=note.created_by.get_full_name(),
+    )
     _send_email(
         subject="Your note was sent",
         template="note_confirmation",
         context=context,
-        to=recipients,
+        recipient=advisor_recipient,
     )
 
 
@@ -154,12 +203,15 @@ def send_note_comment_notification(*, comment):
         "domain": domain,
         "protocol": "https" if use_https else "http",
     }
-    recipients = [Recipient(email=comment.note.student_profile.user.email, name=comment.note.student_profile.user.get_full_name())]
+    student_recipient = Recipient(
+        email=comment.note.student_profile.user.email,
+        name=comment.note.student_profile.user.get_full_name(),
+    )
     _send_email(
         subject="New comment on your note",
         template="note_comment",
         context=context,
-        to=recipients,
+        recipient=student_recipient,
     )
 
 
@@ -173,10 +225,13 @@ def send_note_comment_confirmation(*, comment):
         "domain": domain,
         "protocol": "https" if use_https else "http",
     }
-    recipients = [Recipient(email=comment.author.email, name=comment.author.get_full_name())]
+    author_recipient = Recipient(
+        email=comment.author.email,
+        name=comment.author.get_full_name(),
+    )
     _send_email(
         subject="Your comment was sent",
         template="note_comment_confirmation",
         context=context,
-        to=recipients,
+        recipient=author_recipient,
     )
