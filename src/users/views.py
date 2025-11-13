@@ -154,7 +154,24 @@ class PasswordResetCompleteView(PasswordResetCompleteView):
 
 @role_required(["student"])
 def student_home(request):
-    return render(request, "users/student_home.html")
+    today = date.today()
+    week_end = today + timedelta(days=7)
+
+    upcoming_bookings = (
+        Booking.objects.select_related("availability", "availability__teacher")
+        .filter(
+            student=request.user,
+            availability__date__gte=today,
+            availability__date__lte=week_end,
+        )
+        .order_by("availability__date", "availability__start_time")
+    )
+
+    context = {
+        "upcoming_bookings": upcoming_bookings,
+        "week_range": (today, week_end),
+    }
+    return render(request, "users/student_home.html", context)
 
 
 @role_required(["teacher"])
@@ -245,8 +262,28 @@ def teacher_calendar(request):
 
 @role_required(["admin"])
 def admin_home(request):
-    """Admin home page placeholder."""
-    return render(request, "users/admin_home.html")
+    """Admin home page with upcoming bookings overview."""
+    today = date.today()
+    week_end = today + timedelta(days=7)
+
+    upcoming_bookings = (
+        Booking.objects.select_related(
+            "availability",
+            "availability__teacher",
+            "student",
+        )
+        .filter(
+            availability__date__gte=today,
+            availability__date__lte=week_end,
+        )
+        .order_by("availability__date", "availability__start_time")
+    )
+
+    context = {
+        "upcoming_bookings": upcoming_bookings,
+        "week_range": (today, week_end),
+    }
+    return render(request, "users/admin_home.html", context)
 
 
 @role_required(["admin"])

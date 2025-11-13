@@ -120,9 +120,28 @@
                 {% endif %}
               </div>
               <div class="flex items-center gap-2">
-                <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary">
-                  {{ booking.availability.get_meeting_type_display }}
-                </span>
+                {% with mt=booking.availability.meeting_type %}
+                  {% if mt == 'online' %}
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-100">
+                      <span class="h-2 w-2 rounded-full bg-blue-500"></span>
+                      {{ booking.availability.get_meeting_type_display }}
+                    </span>
+                  {% elif mt == 'in_person' %}
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-100">
+                      <span class="h-2 w-2 rounded-full bg-green-500"></span>
+                      {{ booking.availability.get_meeting_type_display }}
+                    </span>
+                  {% elif mt == 'both' %}
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-100">
+                      <span class="h-2 w-2 rounded-full bg-purple-500"></span>
+                      {{ booking.availability.get_meeting_type_display }}
+                    </span>
+                  {% else %}
+                    <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary">
+                      {{ booking.availability.get_meeting_type_display }}
+                    </span>
+                  {% endif %}
+                {% endwith %}
                 <a
                   href="{% url 'booking:booking_ics' booking.id %}"
                   class="inline-flex items-center gap-1 px-3 py-1 rounded-md border border-input bg-background text-xs font-medium hover:bg-accent hover:text-accent-foreground transition"

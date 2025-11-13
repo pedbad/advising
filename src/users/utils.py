@@ -40,7 +40,8 @@ def get_domain_and_scheme(request=None):
 
     # No request context (e.g., management command)
     domain = getattr(settings, "SITE_DOMAIN", "") or "localhost"
-    return domain, False
+    use_https = getattr(settings, "SITE_USE_HTTPS", False)
+    return domain, use_https
 
 
 def send_invite_email(user, *, domain: str, use_https: bool):

@@ -35,13 +35,19 @@ SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-default")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "True").lower() in {"1", "true", "yes", "on"}
 
-ALLOWED_HOSTS = [h.strip() for h in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")]
+
+def _split_env_list(value: str) -> list[str]:
+    return [item.strip() for item in value.split(",") if item.strip()]
+
+
+ALLOWED_HOSTS = _split_env_list(os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1"))
 
 
 # Site identity (fork-friendly: env-driven; no hard-coded brand/domain defaults)
 _default_origin = "http://127.0.0.1:8000" if ENV == "dev" else ""
 SITE_ORIGIN = os.getenv("SITE_ORIGIN", _default_origin)
 SITE_NAME = os.getenv("SITE_NAME", "Advising")
+SITE_USE_HTTPS = os.getenv("SITE_USE_HTTPS", "false").strip().lower() in {"1", "true", "yes", "on"}
 SITE_DESCRIPTION = os.getenv(
     "SITE_DESCRIPTION",
     "LangCon — a clean, accessible Django 5 + Tailwind v4 starter.",
@@ -225,6 +231,14 @@ try:
             ALLOWED_HOSTS.append(_host)
 except Exception:
     pass
+
+
+_csrf_origins_env = os.getenv("CSRF_TRUSTED_ORIGINS", "").strip()
+CSRF_TRUSTED_ORIGINS = _split_env_list(_csrf_origins_env) if _csrf_origins_env else []
+if SITE_ORIGIN:
+    origin = SITE_ORIGIN.rstrip("/")
+    if origin and origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(origin)
 
 
 # Default primary key field type
