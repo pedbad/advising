@@ -64,6 +64,11 @@ pip install -r requirements-dev.txt
 ```bash
 cp .env.example .env
 python check_env.py
+# generate a fresh secret key (paste into .env)
+python - <<'PY'
+from django.core.management.utils import get_random_secret_key
+print(get_random_secret_key())
+PY
 ```
 
 Update `.env` with database credentials, email settings, etc., as needed. `check_env.py` warns if required keys are missing.
@@ -124,6 +129,24 @@ pytest -q
 python src/manage.py test        # optional: Django test runner
 ruff check                       # lint/format validation
 ```
+
+---
+
+### 12. Deploy with the Makefile (Ubuntu-friendly)
+
+The included `Makefile` doubles as a deployment runbook. Typical flow:
+
+```bash
+make apt-deps         # one-time: install system packages (Python, node, build tools)
+make venv             # creates .venv if it doesn't exist
+make install          # pip install (requirements.txt) + npm install
+make migrate          # makemigrations + migrate
+make build-frontend   # npm run tw:build (Tailwind)
+make collectstatic    # gather static assets for Django
+make gunicorn         # optional smoke test: run gunicorn on port 8000
+```
+
+For a fresh release, `make deploy` chains `install → migrate → build-frontend → collectstatic`. Adapt the targets or wrap them in your systemd/nginx scripts as needed.
 
 ---
 

@@ -17,6 +17,7 @@ from django.contrib.auth.views import (
     PasswordResetDoneView,
     PasswordResetView,
 )
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
@@ -157,6 +158,13 @@ def student_home(request):
     today = date.today()
     week_end = today + timedelta(days=7)
 
+    try:
+        student_profile = request.user.student_profile
+    except ObjectDoesNotExist:
+        student_profile = None
+
+    can_book_meetings = student_profile.has_completed_questionnaire() if student_profile else False
+
     upcoming_bookings = (
         Booking.objects.select_related("availability", "availability__teacher")
         .filter(
@@ -170,6 +178,7 @@ def student_home(request):
     context = {
         "upcoming_bookings": upcoming_bookings,
         "week_range": (today, week_end),
+        "can_book_meetings": can_book_meetings,
     }
     return render(request, "users/student_home.html", context)
 

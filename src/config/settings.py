@@ -175,13 +175,45 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
+db_engine = os.getenv("DB_ENGINE", "").strip()
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+if db_engine:
+    db_name = os.getenv("DB_NAME", "")
+    db_user = os.getenv("DB_USER", "")
+    db_password = os.getenv("DB_PASSWORD", "")
+    db_host = os.getenv("DB_HOST", "")
+    db_port = os.getenv("DB_PORT", "")
+    db_conn_max_age = int(os.getenv("DB_CONN_MAX_AGE", "0"))
+    db_charset = os.getenv("DB_CHARSET", "utf8mb4")
+    db_collation = os.getenv("DB_COLLATION", "utf8mb4_unicode_ci")
+    test_name = os.getenv("DB_TEST_NAME", "test_advising")
+
+    DATABASES = {
+        "default": {
+            "ENGINE": db_engine,
+            "NAME": db_name,
+            "USER": db_user,
+            "PASSWORD": db_password,
+            "HOST": db_host,
+            "PORT": db_port,
+            "CONN_MAX_AGE": db_conn_max_age,
+            "OPTIONS": {
+                "charset": db_charset,
+            },
+            "TEST": {
+                "NAME": test_name,
+                "CHARSET": db_charset,
+                "COLLATION": db_collation,
+            },
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 
 # Password validation
