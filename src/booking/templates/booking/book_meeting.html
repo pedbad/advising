@@ -71,6 +71,9 @@
         selectedSlot: null,
         bookingMessage: '',
         bookedDates: {{ booked_dates|safe }},
+        showCancelModal: false,
+        selectedBooking: null,
+        cancellationMessage: '',
         allSlots: [
           {% for date, slots in availabilities_by_date.items %}
             {% for slot in slots %}
@@ -123,6 +126,16 @@
           this.selectedSlot = null;
           this.bookingMessage = '';
         },
+        openCancellationModal(booking) {
+          this.selectedBooking = booking;
+          this.cancellationMessage = '';
+          this.showCancelModal = true;
+        },
+        closeCancelModal() {
+          this.showCancelModal = false;
+          this.selectedBooking = null;
+          this.cancellationMessage = '';
+        },
         async confirmBooking() {
           if (!this.selectedSlot) return;
 
@@ -149,16 +162,18 @@
             window.location.reload();
           }
         },
-        async cancelBooking(bookingId) {
-          if (!confirm('Are you sure you want to cancel this booking?')) {
+        async confirmCancellation() {
+          if (!this.selectedBooking) return;
+          const trimmedMessage = this.cancellationMessage.trim();
+          if (!trimmedMessage) {
             return;
           }
-
           try {
             const formData = new FormData();
+            formData.append('message', trimmedMessage);
             formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
 
-            const response = await fetch(`/booking/student/cancel-booking/${bookingId}/`, {
+            const response = await fetch(`/booking/student/cancel-booking/${this.selectedBooking.id}/`, {
               method: 'POST',
               body: formData
             });
@@ -173,6 +188,9 @@
           } catch (error) {
             window.location.reload();
           }
+        },
+        cancelBooking(booking) {
+          this.openCancellationModal(booking);
         }
       }">
         {# Controls: Filters on left, Date Picker on right #}
@@ -350,7 +368,13 @@
                       <div class="flex-shrink-0">
                         {% if slot.is_my_booking %}
                           <button
-                            @click="cancelBooking({{ slot.booking.id }})"
+                            @click="cancelBooking({
+                              id: {{ slot.booking.id }},
+                              teacher: '{{ slot.teacher.get_full_name|default:slot.teacher.email|escapejs }}',
+                              date: '{{ date|date:"l, F j, Y"|escapejs }}',
+                              time: '{{ slot.start_time|time:"g:i A"|escapejs }} - {{ slot.end_time|time:"g:i A"|escapejs }}',
+                              meetingType: '{{ slot.get_meeting_type_display|escapejs }}'
+                            })"
                             class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium bg-red-600 text-white hover:bg-red-700 dark:bg-red-600 dark:text-white dark:hover:bg-red-500 transition-colors"
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -476,7 +500,13 @@
                       <div class="flex-shrink-0">
                         {% if slot.is_my_booking %}
                           <button
-                            @click="cancelBooking({{ slot.booking.id }})"
+                            @click="cancelBooking({
+                              id: {{ slot.booking.id }},
+                              teacher: '{{ slot.teacher.get_full_name|default:slot.teacher.email|escapejs }}',
+                              date: '{{ date|date:"l, F j, Y"|escapejs }}',
+                              time: '{{ slot.start_time|time:"g:i A"|escapejs }} - {{ slot.end_time|time:"g:i A"|escapejs }}',
+                              meetingType: '{{ slot.get_meeting_type_display|escapejs }}'
+                            })"
                             class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium bg-red-600 text-white hover:bg-red-700 dark:bg-red-600 dark:text-white dark:hover:bg-red-500 transition-colors"
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -645,6 +675,121 @@
                   class="flex-1 px-4 py-2 rounded-md text-sm font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
                 >
                   Confirm Booking
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {# Cancellation Modal #}
+        <div
+          x-show="showCancelModal"
+          x-transition:enter="transition ease-out duration-300"
+          x-transition:enter-start="opacity-0"
+          x-transition:enter-end="opacity-100"
+          x-transition:leave="transition ease-in duration-200"
+          x-transition:leave-start="opacity-100"
+          x-transition:leave-end="opacity-0"
+          class="fixed inset-0 z-50 overflow-y-auto"
+          style="display: none;"
+          @keydown.escape.window="closeCancelModal()"
+        >
+          <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" @click="closeCancelModal()"></div>
+          <div class="flex min-h-full items-center justify-center p-4">
+            <div
+              class="relative bg-card rounded-lg shadow-xl max-w-lg w-full p-6"
+              x-transition:enter="transition ease-out duration-300"
+              x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+              x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+              x-transition:leave="transition ease-in duration-200"
+              x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+              x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+              @click.stop
+            >
+              <div class="flex items-start justify-between mb-4">
+                <h3 class="text-2xl font-semibold">Cancel Booking</h3>
+                <button
+                  @click="closeCancelModal()"
+                  class="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div class="space-y-4">
+                <div class="p-4 bg-muted/30 rounded-lg space-y-2">
+                  <div class="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-muted-foreground" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                    </svg>
+                    <div>
+                      <span class="text-sm text-muted-foreground">Advisor:</span>
+                      <span class="font-medium ml-2" x-text="selectedBooking?.teacher"></span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-muted-foreground" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+                    </svg>
+                    <div>
+                      <span class="text-sm text-muted-foreground">Date:</span>
+                      <span class="font-medium ml-2" x-text="selectedBooking?.date"></span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-muted-foreground" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                    </svg>
+                    <div>
+                      <span class="text-sm text-muted-foreground">Time:</span>
+                      <span class="font-medium ml-2" x-text="selectedBooking?.time"></span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-muted-foreground" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
+                    </svg>
+                    <div>
+                      <span class="text-sm text-muted-foreground">Type:</span>
+                      <span class="font-medium ml-2" x-text="selectedBooking?.meetingType"></span>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label for="cancellation-message" class="block text-sm font-medium mb-2">
+                    Tell your advisor why you're cancelling <span class="text-red-600">*</span>
+                  </label>
+                  <textarea
+                    id="cancellation-message"
+                    x-model="cancellationMessage"
+                    rows="4"
+                    required
+                    class="w-full px-3 py-2 rounded-md border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                    placeholder="Share any context so your advisor understands the change..."
+                  ></textarea>
+                  <p class="mt-2 text-xs text-muted-foreground">
+                    A short explanation is required and will be included in the cancellation email.
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex gap-3 mt-6">
+                <button
+                  @click="closeCancelModal()"
+                  class="flex-1 px-4 py-2 rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
+                >
+                  Keep Booking
+                </button>
+                <button
+                  @click="confirmCancellation()"
+                  :disabled="!cancellationMessage.trim()"
+                  :class="!cancellationMessage.trim() ? 'cursor-not-allowed opacity-60 bg-muted text-muted-foreground' : 'bg-red-600 text-white hover:bg-red-700'"
+                  class="flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                >
+                  Confirm Cancellation
                 </button>
               </div>
             </div>

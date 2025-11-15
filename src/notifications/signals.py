@@ -17,7 +17,8 @@ def booking_created(sender, instance: Booking, created: bool, **kwargs):
 
 @receiver(pre_delete, sender=Booking)
 def booking_deleted(sender, instance: Booking, **kwargs):
-    emails.send_booking_cancellation(booking=instance)
+    reason = getattr(instance, "cancellation_message", "")
+    emails.send_booking_cancellation(booking=instance, cancellation_message=reason)
 
 
 @receiver(post_save, sender=StudentNote)

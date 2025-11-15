@@ -194,6 +194,17 @@ def cancel_booking(request, booking_id):
         return JsonResponse({"success": False, "error": "Invalid request method."}, status=405)
 
     try:
+        message = request.POST.get("message", "").strip()
+
+        if not message:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": "Please provide a short message explaining why you are cancelling.",
+                },
+                status=400,
+            )
+
         # Get the booking and ensure it belongs to the current student
         booking = get_object_or_404(
             Booking.objects.select_related("availability", "availability__teacher"),
@@ -207,6 +218,9 @@ def cancel_booking(request, booking_id):
         date_str = availability.date.strftime("%B %d, %Y")
         time_str = availability.start_time.strftime("%-I:%M %p")
         meeting_type = availability.get_meeting_type_display()
+
+        # Attach cancellation message so notifications can use it
+        booking.cancellation_message = message
 
         # Delete the booking
         booking.delete()

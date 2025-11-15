@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import html
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -52,6 +53,7 @@ def _send_email(
     context = {"SITE_NAME": getattr(settings, "SITE_NAME", "Advising"), **context}
     context = {**context, "recipient": recipient}
     txt_body = render_to_string(f"notifications/email/{template}.txt", context)
+    txt_body = html.unescape(txt_body)
     html_path = f"notifications/email/{template}.html"
     try:
         html_body = render_to_string(html_path, context)
@@ -122,8 +124,9 @@ def send_booking_confirmation(*, booking):
         )
 
 
-def send_booking_cancellation(*, booking):
+def send_booking_cancellation(*, booking, cancellation_message: str | None = None):
     domain, use_https = get_domain_and_scheme()
+    cancellation_reason = cancellation_message or getattr(booking, "cancellation_message", "")
     context = {
         "booking": booking,
         "student": booking.student,
@@ -131,6 +134,7 @@ def send_booking_cancellation(*, booking):
         "slot": booking.availability,
         "domain": domain,
         "protocol": "https" if use_https else "http",
+        "cancellation_reason": cancellation_reason,
     }
     protocol = "https" if use_https else "http"
 

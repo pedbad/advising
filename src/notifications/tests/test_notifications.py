@@ -67,10 +67,13 @@ def test_booking_cancellation_sends_notifications(
     admin_user, student_user, availability, mailoutbox
 ):
     booking = Booking.objects.create(availability=availability, student=student_user)
+    reason = "Need to reschedule"
+    booking.cancellation_message = reason
     mailoutbox.clear()
     booking.delete()
     assert len(mailoutbox) == 3
     assert any(message.subject == "Booking cancelled" for message in mailoutbox)
+    assert all(reason in message.body for message in mailoutbox)
 
 
 @pytest.mark.django_db

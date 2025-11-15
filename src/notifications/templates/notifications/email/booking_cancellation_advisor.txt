@@ -2,6 +2,11 @@ Hi {{ advisor.get_full_name|default:advisor.email }},
 
 {{ student.get_full_name|default:student.email }} cancelled the session scheduled for {{ slot.date }} at {{ slot.start_time }}.
 
+{% if cancellation_reason %}
+Reason provided:
+{{ cancellation_reason }}
+{% endif %}
+
 Review your schedule:
 {{ dashboard_url }}
 
