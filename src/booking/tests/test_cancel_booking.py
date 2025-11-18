@@ -1,8 +1,8 @@
 import datetime
 from html import unescape
 
-import pytest
 from django.urls import reverse
+import pytest
 
 from availability.models import Availability
 from booking.models import Booking

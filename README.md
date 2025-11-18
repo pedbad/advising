@@ -7,6 +7,8 @@
 
 A multi-role advising portal that joins Django 5.2, Tailwind CSS 4, and the `django-tailwind`/ShadCN-inspired component kit. Students, advisors/teachers, and admins share one codebase while seeing role-aware dashboards, navigation, and tooling.
 
+Note, some issues with python 3.13 for deplotment, may use 3.12
+
 ---
 
 ## Feature Highlights
