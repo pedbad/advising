@@ -178,8 +178,22 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": os.getenv("DB_ENGINE", "django.db.backends.sqlite3"),
+        "NAME": os.getenv("DB_NAME", os.path.join(BASE_DIR, "db.sqlite3")),
+        "USER": os.getenv("DB_USER", ""),
+        "PASSWORD": os.getenv("DB_PASSWORD", ""),
+        "HOST": os.getenv("DB_HOST", ""),
+        "PORT": os.getenv("DB_PORT", ""),
+        "CONN_MAX_AGE": int(os.getenv("DB_CONN_MAX_AGE", "0")),
+        "OPTIONS": {
+            # Keep it simple to avoid privileged session SETs
+            "charset": os.getenv("DB_CHARSET", "utf8mb4"),
+        },
+        "TEST": {
+            "NAME": "test_advising",
+            "CHARSET": os.getenv("DB_CHARSET", "utf8mb4"),
+            "COLLATION": os.getenv("DB_COLLATION", "utf8mb4_unicode_ci"),
+        },
     }
 }
 
